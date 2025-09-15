@@ -1,7 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import authRoutes from "./routes/authRoutes.js"; // ✅ fixed path
+import authRoutes from "./routes/authRoutes.js"; 
 import surveyRoutes from "./routes/surveyRoutes.js"
 dotenv.config();
 
