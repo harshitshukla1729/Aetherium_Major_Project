@@ -1,17 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 
-export default function Home() {
-  const { user } = useAuth(); // get user from custom hook
-
+export default function Home({ user }) {
   return (
     <div className='p-6'>
       <h1 className='text-2xl font-bold mb-4'>
         Welcome to Aetherium (Final Year Major Project)
       </h1>
       <p className='mb-4'>
-        This project helps plan extra-curricular activities for Internet/Mobile Addicts.
+        This project helps plan extra-curricular activities for Internet/Mobile
+        Addicts.
       </p>
 
       <div className='flex gap-4 items-center'>

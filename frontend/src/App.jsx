@@ -26,7 +26,7 @@ function App() {
       <div className='container mx-auto mt-6'>
         <Toaster position="top-right" reverseOrder={false} />
         <Routes>
-          <Route path='/' element={<Home />} />
+          <Route path='/' element={<Home user={user}/>} />
           <Route path='/login' element={<Login setUser={setUser} />} />
           <Route path='/signup' element={<Signup setUser={setUser} />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
