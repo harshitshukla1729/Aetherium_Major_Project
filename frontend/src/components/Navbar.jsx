@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navbar({ user, onLogout }) {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function Navbar({ user, onLogout }) {
         {user ? (
           <div className='flex items-center gap-4'>
             <span>{user.username}</span>
+            {/* <ThemeToggle /> */}
             <button
               onClick={handleLogout}
               className='bg-red-500 px-3 py-1 rounded'

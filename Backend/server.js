@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import surveyRoutes from './routes/surveyRoutes.js';
+import activityRoutes from "./routes/activityRoutes.js";
 import cors from 'cors';
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/survey', surveyRoutes);
+app.use("/api/activities", activityRoutes);
 app.get('/', (req, res) => res.json('hello world'));
 // DB connection
 mongoose

@@ -19,6 +19,21 @@ export default function Tasks() {
           <p className='text-gray-600 text-sm'>Complete your wellness survey</p>
         </div>
 
+         <div
+          onClick={() => navigate('/activities')}
+          className='cursor-pointer p-4 bg-white rounded-lg shadow hover:shadow-lg transition'
+        >
+          <h3 className='font-semibold text-lg mb-2'>Track your Activities</h3>
+          <p className='text-gray-600 text-sm'>Schedule your weekly and daily tasks and schedule them</p>
+        </div>
+         <div
+          onClick={() => navigate('/feedback')}
+          className='cursor-pointer p-4 bg-white rounded-lg shadow hover:shadow-lg transition'
+        >
+          <h3 className='font-semibold text-lg mb-2'>Get Feedback</h3>
+          <p className='text-gray-600 text-sm'>Analyze your performance on daily and weekly goals</p>
+        </div>
+
         {/* Example placeholder for future task cards */}
         <div className='p-4 bg-white rounded-lg shadow opacity-60'>
           <h3 className='font-semibold text-lg mb-2'>Coming Soon</h3>

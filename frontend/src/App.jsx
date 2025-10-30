@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import { Toaster } from "react-hot-toast";
+import FeedbackPage from './pages/Feedback';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -10,7 +11,8 @@ import useAuth from './hooks/useAuth';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Tasks from './pages/Tasks';
-
+import ActivityTracker from './pages/ActivityTracker'; 
+import ActivityForm from './pages/ActivityForm'; 
 function App() {
   const { user, setUser, logout } = useAuth();
 
@@ -47,8 +49,33 @@ function App() {
               </Protected>
             }
           />
+            <Route
+            path="/activities"
+            element={
+              <Protected>
+                <ActivityTracker />
+              </Protected>
+            }
+          />
+          <Route
+            path="/activities/new"
+            element={
+              <Protected>
+                <ActivityForm />
+              </Protected>
+            }
+          />
+          <Route
+            path="/feedback"
+            element={
+              <Protected>
+                <FeedbackPage />
+              </Protected>
+            }
+          />
         </Routes>
       </div>
+       <Toaster />
     </div>
   );
 }
