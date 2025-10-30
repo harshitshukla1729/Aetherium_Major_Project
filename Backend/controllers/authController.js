@@ -35,7 +35,7 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
@@ -76,7 +76,7 @@ export const forgotPassword = async (req, res) => {
       });
 
       res.status(200).json({
-        message: 'Token sent to email!',
+        message: 'Reset Link sent to email!',
       });
     } catch (error) {
       user.passwordResetToken = undefined;

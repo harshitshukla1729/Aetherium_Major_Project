@@ -11,7 +11,7 @@ const surveySchema = new mongoose.Schema({
     type: [Number],
     required: true,
     validate: {
-      validator: (arr) => arr.length === 20 && arr.every(score => score >= 1 && score <= 5),
+      validator: (arr) => arr.length === 25 && arr.every(score => score >= 1 && score <= 5),
       message: 'Scores for Part 1 must be an array of 20 numbers between 1 and 5.',
     },
   },

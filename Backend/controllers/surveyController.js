@@ -7,8 +7,8 @@ export const submitSurvey = async (req, res) => {
     const userId = req.user.id; // Assuming you have a user ID from a JWT token
 
     // Validate that both parts are present and of the correct length
-    if (!scoresPart1 || scoresPart1.length !== 20 || !scoresPart2 || scoresPart2.length !== 5) {
-      return res.status(400).json({ message: "Invalid survey data. Requires 20 scores for part 1 and 5 for part 2." });
+    if (!scoresPart1 || scoresPart1.length !== 25 || !scoresPart2 || scoresPart2.length !== 5) {
+      return res.status(400).json({ message: "Invalid survey data. Requires 25 scores for part 1 and 5 for part 2." });
     }
 
     // Calculate the total scores for each part

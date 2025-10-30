@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import { Toaster } from "react-hot-toast";
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -8,6 +9,7 @@ import Survey from './pages/Survey';
 import useAuth from './hooks/useAuth';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Tasks from './pages/Tasks';
 
 function App() {
   const { user, setUser, logout } = useAuth();
@@ -22,12 +24,21 @@ function App() {
     <div className='min-h-screen bg-gray-100'>
       <Navbar user={user} onLogout={logout} />
       <div className='container mx-auto mt-6'>
+        <Toaster position="top-right" reverseOrder={false} />
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/login' element={<Login setUser={setUser} />} />
           <Route path='/signup' element={<Signup setUser={setUser} />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/reset-password/:token' element={<ResetPassword />} />
+          <Route
+            path='/tasks'
+            element={
+              <Protected>
+                <Tasks />
+              </Protected>
+            }
+          />
           <Route
             path='/survey'
             element={

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import toast from 'react-hot-toast';
 
 export default function ResetPassword() {
   const { token } = useParams();
@@ -15,23 +16,18 @@ export default function ResetPassword() {
       const res = await api.patch(`/auth/reset-password/${token}`, {
         password,
       });
-      setMessage(res.data.message);
-      setError('');
+      toast.success(res.data.message || 'Password reset successful');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
       console.log(err.message);
-      setError(err.response?.data?.message || 'Password reset failed');
-      setMessage('');
+      const errMsg = err.response?.data?.message || 'Password reset failed';
+      toast.error(errMsg);
     }
   };
 
   return (
     <div className='max-w-md mx-auto p-6'>
       <h2 className='text-xl font-bold mb-4'>Reset Password</h2>
-      {message && (
-        <div className='bg-green-100 text-green-700 p-2 mb-4'>{message}</div>
-      )}
-      {error && <div className='bg-red-100 text-red-700 p-2 mb-4'>{error}</div>}
       <form onSubmit={handleSubmit} className='flex flex-col gap-3'>
         <input
           type='password'
