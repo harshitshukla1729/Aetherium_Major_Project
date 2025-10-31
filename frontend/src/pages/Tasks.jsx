@@ -18,7 +18,13 @@ export default function Tasks() {
           <h3 className='font-semibold text-lg mb-2'>📝 Take Survey</h3>
           <p className='text-gray-600 text-sm'>Complete your wellness survey</p>
         </div>
-
+        <div
+          onClick={() => navigate('/agent-survey')}
+          className='cursor-pointer p-4 bg-white rounded-lg shadow hover:shadow-lg transition'
+        >
+          <h3 className='font-semibold text-lg mb-2'>Talk to a Chatbot!</h3>
+          <p className='text-gray-600 text-sm'>Feeling like rating does not give your issues a justice? Talk to an AI bot .</p>
+        </div>
          <div
           onClick={() => navigate('/activities')}
           className='cursor-pointer p-4 bg-white rounded-lg shadow hover:shadow-lg transition'

@@ -13,6 +13,7 @@ import ResetPassword from './pages/ResetPassword';
 import Tasks from './pages/Tasks';
 import ActivityTracker from './pages/ActivityTracker'; 
 import ActivityForm from './pages/ActivityForm'; 
+import AgentSurvey from './pages/AgentSurvey.jsx';
 function App() {
   const { user, setUser, logout } = useAuth();
 
@@ -70,6 +71,14 @@ function App() {
             element={
               <Protected>
                 <FeedbackPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/agent-survey"
+            element={
+              <Protected>
+                <AgentSurvey />
               </Protected>
             }
           />
