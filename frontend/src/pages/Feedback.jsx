@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
-import useAuth from '/src/hooks/useAuth.js'; 
-// 🏅 ✅ ⚠️ 🚩 📱 💻 🌐
+import useAuth from '../hooks/useAuth.js'; // Corrected import path
+// Emojis used as placeholders: 🏅 ✅ ⚠️ 🚩 📱
 
+// Helper function to get auth headers dynamically
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -22,7 +23,8 @@ const FeedbackPage = () => {
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [tab, setTab] = useState('daily');
+  const [tab, setTab] = useState('daily'); // 'daily' or 'weekly'
+
   const fetchFeedback = useCallback(async () => {
     if (!user) {
       setLoading(false);
@@ -63,65 +65,68 @@ const FeedbackPage = () => {
     fetchFeedback();
   }, [fetchFeedback]);
 
-  const renderFeedbackSection = (data, title) => {
-    if (!data) return null;
-    const {
-      overallProgress,
-      message,
+  // Renders the "Activity Goal Progress" card
+  const renderProgressSection = (data, title) => {
+    if (!data || !data.progress) return null;
+
+    const { 
+      overallProgress = 0, 
+      message = "No progress data available.", 
       completedTasks = [],
       missedTasks = [],
-    } = data;
-
-    const progress = overallProgress ?? 0;
+      totalTarget = 0
+    } = data.progress;
+    
     let progressColor = 'progress-success';
-    if (progress < 50) progressColor = 'progress-error';
-    else if (progress < 100) progressColor = 'progress-warning';
+    if (overallProgress < 50) progressColor = 'progress-error';
+    else if (overallProgress < 100) progressColor = 'progress-warning';
+
+    if (totalTarget === 0) {
+      return (
+        <div className="card bg-base-100 shadow-lg mb-6">
+          <div className="card-body">
+            <h2 className="card-title text-2xl mb-4">{title} Progress</h2>
+            <div className="text-center p-4 bg-base-200 rounded-lg">
+              <span className="mx-auto text-3xl text-gray-400 mb-2">🚩</span>
+              <h3 className="font-semibold">No Goals Set</h3>
+              <p className="text-sm text-gray-500">You haven't set any {tab} goals yet. Go to the Activity Tracker to add some!</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
-      <div className='bg-white rounded-2xl shadow-md border border-gray-200 p-6 mb-8 transition-all hover:shadow-lg'>
-        <h2 className='text-2xl font-semibold text-gray-800 mb-4'>{title}</h2>
+      <div className='card bg-base-100 shadow-lg mb-6'>
+        <div className='card-body'>
+          <h2 className='text-2xl font-semibold text-gray-800 mb-4'>{title}</h2>
 
-        {/* Progress Section */}
-        <div className='mb-6'>
-          <h3 className='text-lg font-medium text-gray-700 flex items-center mb-2'>
-            <span className='mr-2'>🏅</span> Your Progress Report
-          </h3>
-          <p className='text-gray-600 mb-3'>{message}</p>
-          <progress
-            className={`progress ${progressColor} w-full h-3 rounded-full`}
-            value={progress.toFixed(0)}
-            max='100'
-          ></progress>
-          <p className='text-sm text-right text-gray-500 mt-1'>
-            {progress.toFixed(0)}% Complete
-          </p>
-        </div>
-
-        {/* Completed Tasks */}
-        {completedTasks.length > 0 && (
+          {/* Progress Section */}
           <div className='mb-6'>
-            <h3 className='text-lg font-medium text-green-700 flex items-center mb-2'>
-              <span className='mr-2'>✅</span> Great Job!
+            <h3 className='text-lg font-medium text-gray-700 flex items-center mb-2'>
+              <span className='mr-2'>🏅</span> Your Progress Report
             </h3>
-            <p className='text-gray-600'>
-              You successfully completed the following tasks:
+            <p className='text-gray-600 mb-3'>{message}</p>
+            <progress
+              className={`progress ${progressColor} w-full h-3 rounded-full`}
+              value={overallProgress.toFixed(0)}
+              max='100'
+            ></progress>
+            <p className='text-sm text-right text-gray-500 mt-1'>
+              {overallProgress.toFixed(0)}% Complete
             </p>
-            <ul className='list-disc list-inside mt-2 text-green-600'>
-              {completedTasks.map((task) => (
-                <li key={task._id}>{task.activityName}</li>
-              ))}
-            </ul>
           </div>
-        )}
 
-          {/* Completed Tasks Section (Safe: defaults to []) */}
+          {/* Completed Tasks - Removed the duplicated block */}
           {completedTasks.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold flex items-center mb-2">
-                <span className="mr-2 text-xl">✅</span> Congratulations!
+            <div className='mb-6'>
+              <h3 className='text-lg font-medium text-green-700 flex items-center mb-2'>
+                <span className='mr-2'>✅</span> Great Job!
               </h3>
-              <p>You successfully completed the following tasks:</p>
-              <ul className="list-disc list-inside mt-2 text-success">
+              <p className='text-gray-600'>
+                You successfully completed the following tasks:
+              </p>
+              <ul className='list-disc list-inside mt-2 text-green-600'>
                 {completedTasks.map((task) => (
                   <li key={task._id}>{task.activityName}</li>
                 ))}
@@ -129,7 +134,7 @@ const FeedbackPage = () => {
             </div>
           )}
 
-          {/* Missed Tasks Section (Safe: defaults to []) */}
+          {/* Missed Tasks Section */}
           {missedTasks.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold flex items-center mb-2">
@@ -150,7 +155,6 @@ const FeedbackPage = () => {
 
   // Renders the "Screen Time Report" card
   const renderScreenTimeSection = (data) => {
-    // Fix: Check if data or data.screenTime exists
     if (!data || !data.screenTime) return null;
 
     const { totalScreenTime = 0, byType = {} } = data.screenTime;
@@ -200,28 +204,28 @@ const FeedbackPage = () => {
     );
 
   return (
-    <div className='container mx-auto p-6 md:p-10 max-w-4xl bg-gray-50 min-h-screen rounded-xl'>
+    <div className='container mx-auto p-6 md:p-10 max-w-4xl min-h-screen'>
       <Toaster position='top-right' />
-      <h1 className='text-4xl font-bold text-center mb-8 text-gray-800'>
+      <h1 className='text-4xl font-bold text-center mb-8 text-gray-800 dark:text-white'>
         Your Feedback
       </h1>
 
-      <div className='tabs tabs-boxed bg-white shadow-sm mb-8 border border-gray-200 rounded-xl'>
+      <div className='tabs tabs-boxed bg-base-100 shadow-sm mb-8 border border-gray-200 dark:border-gray-700 rounded-xl'>
         <a
-          className={`tab tab-lg font-medium ${
+          className={`tab tab-lg font-medium flex-1 ${
             tab === 'daily'
-              ? 'tab-active text-blue-600 bg-blue-50'
-              : 'text-gray-600'
+              ? 'tab-active text-primary'
+              : 'text-gray-600 dark:text-gray-300'
           }`}
           onClick={() => setTab('daily')}
         >
           Daily Feedback
         </a>
         <a
-          className={`tab tab-lg font-medium ${
+          className={`tab tab-lg font-medium flex-1 ${
             tab === 'weekly'
-              ? 'tab-active text-blue-600 bg-blue-50'
-              : 'text-gray-600'
+              ? 'tab-active text-primary'
+              : 'text-gray-600 dark:text-gray-300'
           }`}
           onClick={() => setTab('weekly')}
         >
@@ -247,3 +251,4 @@ const FeedbackPage = () => {
 };
 
 export default FeedbackPage;
+
