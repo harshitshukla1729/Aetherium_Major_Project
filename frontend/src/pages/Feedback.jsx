@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
+import useAuth from '/src/hooks/useAuth.js'; 
+// 🏅 ✅ ⚠️ 🚩 📱 💻 🌐
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -16,46 +18,50 @@ const getAuthHeaders = () => {
 };
 
 const FeedbackPage = () => {
+  const { user } = useAuth(); 
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState('daily');
+  const fetchFeedback = useCallback(async () => {
+    if (!user) {
+      setLoading(false);
+      setError("Please log in to view feedback.");
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    const authHeaders = getAuthHeaders();
+    
+    if (!authHeaders) {
+      setLoading(false);
+      setError("You are not logged in.");
+      return;
+    }
+
+    try {
+      const response = await axios.get('http://localhost:3000/api/activities/feedback', authHeaders);
+      
+      if (response.data && response.data.data) {
+        setFeedback(response.data.data);
+      } else {
+        console.error("Unexpected feedback data structure:", response.data);
+        setError('Failed to get feedback data.');
+      }
+    } catch (err) {
+      console.error('Error fetching feedback:', err);
+      const errorMsg = err.response?.data?.message || 'Could not fetch feedback.';
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]); 
 
   useEffect(() => {
-    const fetchFeedback = async () => {
-      setLoading(true);
-      setError(null);
-      const authHeaders = getAuthHeaders();
-
-      if (!authHeaders) {
-        setLoading(false);
-        setError('You are not logged in.');
-        return;
-      }
-
-      try {
-        const response = await axios.get(
-          'http://localhost:3000/api/activities/feedback',
-          authHeaders
-        );
-
-        if (response.data && response.data.data) {
-          setFeedback(response.data.data);
-        } else {
-          setError('Failed to get feedback data.');
-        }
-      } catch (err) {
-        const errorMsg =
-          err.response?.data?.message || 'Could not fetch feedback.';
-        setError(errorMsg);
-        toast.error(errorMsg);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchFeedback();
-  }, []);
+  }, [fetchFeedback]);
 
   const renderFeedbackSection = (data, title) => {
     if (!data) return null;
@@ -108,36 +114,70 @@ const FeedbackPage = () => {
           </div>
         )}
 
-        {/* Missed Tasks */}
-        {missedTasks.length > 0 && (
-          <div>
-            <h3 className='text-lg font-medium text-red-700 flex items-center mb-2'>
-              <span className='mr-2'>⚠️</span> Missed Deadlines
-            </h3>
-            <p className='text-gray-600'>
-              Looks like you missed the deadline for these tasks:
-            </p>
-            <ul className='list-disc list-inside mt-2 text-red-600'>
-              {missedTasks.map((task) => (
-                <li key={task._id}>
-                  {task.activityName} (Target: {task.targetMinutes} mins)
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+          {/* Completed Tasks Section (Safe: defaults to []) */}
+          {completedTasks.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold flex items-center mb-2">
+                <span className="mr-2 text-xl">✅</span> Congratulations!
+              </h3>
+              <p>You successfully completed the following tasks:</p>
+              <ul className="list-disc list-inside mt-2 text-success">
+                {completedTasks.map((task) => (
+                  <li key={task._id}>{task.activityName}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-        {/* No Tasks */}
-        {completedTasks.length === 0 && missedTasks.length === 0 && (
-          <div className='text-center p-6 bg-gray-50 rounded-xl border border-gray-200'>
-            <div className='text-4xl mb-2'>🚩</div>
-            <h3 className='font-semibold text-gray-700'>No Tasks Found</h3>
-            <p className='text-sm text-gray-500'>
-              You did not have any {title.toLowerCase()} scheduled. Set some new
-              goals!
-            </p>
-          </div>
-        )}
+          {/* Missed Tasks Section (Safe: defaults to []) */}
+          {missedTasks.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold flex items-center mb-2">
+                <span className="mr-2 text-xl">⚠️</span> Missed Deadlines
+              </h3>
+              <p>Looks like you missed the deadline for these tasks:</p>
+              <ul className="list-disc list-inside mt-2 text-error">
+                {missedTasks.map((task) => (
+                  <li key={task._id}>{task.activityName} (Target: {task.targetMinutes} mins)</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Renders the "Screen Time Report" card
+  const renderScreenTimeSection = (data) => {
+    // Fix: Check if data or data.screenTime exists
+    if (!data || !data.screenTime) return null;
+
+    const { totalScreenTime = 0, byType = {} } = data.screenTime;
+    const types = Object.keys(byType);
+
+    return (
+      <div className="card bg-base-100 shadow-lg">
+        <div className="card-body">
+          <h2 className="card-title text-2xl mb-4">Screen Time Report</h2>
+          {totalScreenTime === 0 ? (
+            <div className="text-center p-4 bg-base-200 rounded-lg">
+              <span className="mx-auto text-3xl text-gray-400 mb-2">📱</span>
+              <h3 className="font-semibold">No Screen Time Logged</h3>
+              <p className="text-sm text-gray-500">You haven't logged any general screen time for this period.</p>
+            </div>
+          ) : (
+            <div>
+              <p className="text-lg mb-4">You've logged a total of <strong className="text-primary">{Math.floor(totalScreenTime / 60)}h {totalScreenTime % 60}m</strong> of screen time.</p>
+              <h3 className="font-semibold mb-2">Breakdown:</h3>
+              <ul className="list-disc list-inside">
+                {types.map(type => (
+                  <li key={type}><strong>{type}:</strong> {byType[type]} minutes</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -189,9 +229,19 @@ const FeedbackPage = () => {
         </a>
       </div>
 
-      {tab === 'daily'
-        ? renderFeedbackSection(feedback?.daily, 'Daily Report')
-        : renderFeedbackSection(feedback?.weekly, 'Weekly Report')}
+      {/* Render content based on the active tab */}
+      {tab === 'daily' && (
+        <>
+          {renderProgressSection(feedback?.daily, 'Daily')}
+          {renderScreenTimeSection(feedback?.daily)}
+        </>
+      )}
+      {tab === 'weekly' && (
+        <>
+          {renderProgressSection(feedback?.weekly, 'Weekly')}
+          {renderScreenTimeSection(feedback?.weekly)}
+        </>
+      )}
     </div>
   );
 };

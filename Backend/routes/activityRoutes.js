@@ -3,29 +3,32 @@ import { protect } from '../middleware/authMiddleware.js';
 import { 
   createActivity, 
   getMyActivities, 
-  deleteActivity,
-  getActivitySummary,
+  deleteActivity, 
   updateActivityProgress,
-  getFeedback 
+  getFeedback,
+  getActivitySummary // Make sure to import this
 } from '../controllers/activityController.js';
 
 const router = express.Router();
 
 
+router.use(protect);
+
+
+router.get('/summary', getActivitySummary); 
+
+
+router.get('/feedback', getFeedback);
+
+
 router.route('/')
-  .post(protect, createActivity)
-  .get(protect, getMyActivities);
-
-
-router.get('/feedback', protect, getFeedback);
-
-
-router.get('/summary', protect, getActivitySummary);
+  .post(createActivity)   
+  .get(getMyActivities);  
 
 
 router.route('/:id')
-  .delete(protect, deleteActivity)
-  .patch(protect, updateActivityProgress); 
+  .delete(deleteActivity)         
+  .patch(updateActivityProgress); 
 
 export default router;
 

@@ -122,7 +122,6 @@ const AgentSurvey = () => {
         )}
         <div ref={chatEndRef} />
       </div>
-
       {/* Assessment Section */}
       {assessment ? (
         <div className='card bg-gradient-to-br from-white to-blue-50 shadow-xl border border-blue-200 mt-4'>
@@ -155,7 +154,7 @@ const AgentSurvey = () => {
             <p className='mb-2 text-gray-700 leading-relaxed'>
               {assessment.assessment}
             </p>
-            {assessment.keyAreas && (
+            {assessment.keyAreas &&  assessment.keyAreas.length > 0 && (
               <div className='mt-4'>
                 <h3 className='font-semibold mb-2 text-gray-800'>
                   Key Areas of Concern:
@@ -175,6 +174,7 @@ const AgentSurvey = () => {
           </div>
         </div>
       ) : (
+
         <form onSubmit={handleSend} className='flex gap-2 mt-4'>
           <input
             type='text'
