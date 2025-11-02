@@ -7,8 +7,8 @@ import useAuth from '/src/hooks/useAuth.js';
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   if (!token) {
-    toast.error("Authentication token not found. Please log in again.");
-    return null; 
+    toast.error('Authentication token not found. Please log in again.');
+    return null;
   }
   return {
     headers: {
@@ -22,8 +22,7 @@ const FeedbackPage = () => {
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [tab, setTab] = useState('daily'); 
-
+  const [tab, setTab] = useState('daily');
   const fetchFeedback = useCallback(async () => {
     if (!user) {
       setLoading(false);
@@ -64,55 +63,56 @@ const FeedbackPage = () => {
     fetchFeedback();
   }, [fetchFeedback]);
 
-  const renderProgressSection = (data, title) => {
-    if (!data || !data.progress) return null;
+  const renderFeedbackSection = (data, title) => {
+    if (!data) return null;
+    const {
+      overallProgress,
+      message,
+      completedTasks = [],
+      missedTasks = [],
+    } = data;
 
-    const { 
-      overallProgress = 0, // Default to 0
-      message = "No progress data available.", 
-      completedTasks = [], 
-      missedTasks = [],     
-      totalTarget = 0
-    } = data.progress;
-    
-    
+    const progress = overallProgress ?? 0;
     let progressColor = 'progress-success';
-    if (overallProgress < 50) progressColor = 'progress-error';
-    else if (overallProgress < 100) progressColor = 'progress-warning';
-
-    // Show this only if there are goals set
-    if (totalTarget === 0) {
-      return (
-        <div className="card bg-base-100 shadow-lg mb-6">
-          <div className="card-body">
-            <h2 className="card-title text-2xl mb-4">{title} Progress</h2>
-            <div className="text-center p-4 bg-base-200 rounded-lg">
-              <span className="mx-auto text-3xl text-gray-400 mb-2">🚩</span>
-              <h3 className="font-semibold">No Goals Set</h3>
-              <p className="text-sm text-gray-500">You haven't set any {tab} goals yet. Go to the Activity Tracker to add some!</p>
-            </div>
-          </div>
-        </div>
-      );
-    }
+    if (progress < 50) progressColor = 'progress-error';
+    else if (progress < 100) progressColor = 'progress-warning';
 
     return (
-      <div className="card bg-base-100 shadow-lg mb-6">
-        <div className="card-body">
-          <h2 className="card-title text-2xl mb-4">{title} Progress</h2>
-          {/* Progress Section */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold flex items-center mb-2">
-              <span className="mr-2 text-xl">🏅</span> Your Progress Report
+      <div className='bg-white rounded-2xl shadow-md border border-gray-200 p-6 mb-8 transition-all hover:shadow-lg'>
+        <h2 className='text-2xl font-semibold text-gray-800 mb-4'>{title}</h2>
+
+        {/* Progress Section */}
+        <div className='mb-6'>
+          <h3 className='text-lg font-medium text-gray-700 flex items-center mb-2'>
+            <span className='mr-2'>🏅</span> Your Progress Report
+          </h3>
+          <p className='text-gray-600 mb-3'>{message}</p>
+          <progress
+            className={`progress ${progressColor} w-full h-3 rounded-full`}
+            value={progress.toFixed(0)}
+            max='100'
+          ></progress>
+          <p className='text-sm text-right text-gray-500 mt-1'>
+            {progress.toFixed(0)}% Complete
+          </p>
+        </div>
+
+        {/* Completed Tasks */}
+        {completedTasks.length > 0 && (
+          <div className='mb-6'>
+            <h3 className='text-lg font-medium text-green-700 flex items-center mb-2'>
+              <span className='mr-2'>✅</span> Great Job!
             </h3>
-            <p className="mb-3">{message}</p>
-            <progress
-              className={`progress ${progressColor} w-full`}
-              value={overallProgress} // This is now safe (defaults to 0)
-              max="100"
-            ></progress>
-            <p className="text-sm text-right font-medium mt-1">{overallProgress}% Complete</p>
+            <p className='text-gray-600'>
+              You successfully completed the following tasks:
+            </p>
+            <ul className='list-disc list-inside mt-2 text-green-600'>
+              {completedTasks.map((task) => (
+                <li key={task._id}>{task.activityName}</li>
+              ))}
+            </ul>
           </div>
+        )}
 
           {/* Completed Tasks Section (Safe: defaults to []) */}
           {completedTasks.length > 0 && (
@@ -182,42 +182,47 @@ const FeedbackPage = () => {
     );
   };
 
-  // Main component render
-  if (loading) {
+  if (loading)
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
+      <div className='flex justify-center items-center min-h-[calc(100vh-200px)]'>
+        <span className='loading loading-spinner loading-lg text-primary'></span>
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
-        <div className="text-center text-error">
-          <p className="text-2xl font-bold">Error</p>
+      <div className='flex justify-center items-center min-h-[calc(100vh-200px)]'>
+        <div className='text-center text-red-600'>
+          <p className='text-2xl font-bold mb-2'>Error</p>
           <p>{error}</p>
         </div>
       </div>
     );
-  }
 
   return (
-    <div className="container mx-auto p-4 md:p-8 max-w-4xl">
-      <Toaster position="top-right" />
-      <h1 className="text-4xl font-bold text-center mb-8 text-gray-800 dark:text-white">
+    <div className='container mx-auto p-6 md:p-10 max-w-4xl bg-gray-50 min-h-screen rounded-xl'>
+      <Toaster position='top-right' />
+      <h1 className='text-4xl font-bold text-center mb-8 text-gray-800'>
         Your Feedback
       </h1>
 
-      <div className="tabs tabs-boxed mb-6">
+      <div className='tabs tabs-boxed bg-white shadow-sm mb-8 border border-gray-200 rounded-xl'>
         <a
-          className={`tab tab-lg ${tab === 'daily' ? 'tab-active' : ''}`}
+          className={`tab tab-lg font-medium ${
+            tab === 'daily'
+              ? 'tab-active text-blue-600 bg-blue-50'
+              : 'text-gray-600'
+          }`}
           onClick={() => setTab('daily')}
         >
           Daily Feedback
         </a>
         <a
-          className={`tab tab-lg ${tab === 'weekly' ? 'tab-active' : ''}`}
+          className={`tab tab-lg font-medium ${
+            tab === 'weekly'
+              ? 'tab-active text-blue-600 bg-blue-50'
+              : 'text-gray-600'
+          }`}
           onClick={() => setTab('weekly')}
         >
           Weekly Feedback
@@ -242,4 +247,3 @@ const FeedbackPage = () => {
 };
 
 export default FeedbackPage;
-
