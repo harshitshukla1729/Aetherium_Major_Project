@@ -16,7 +16,22 @@ export default function Navbar({ user, onLogout }) {
           Aetherium
         </Link>
         <Link to='/tasks' className='hover:underline'>
-          Tasks
+          Home
+        </Link>
+        <Link to='/survey' className='hover:underline'>
+          Survey
+        </Link>
+        <Link to='/agent-survey' className='hover:underline'>
+          SurveyBOT
+        </Link>
+        <Link to='/activities' className='hover:underline'>
+          Tracker
+        </Link>
+        <Link to='/screen-time' className='hover:underline'>
+          Screen time
+        </Link>
+        <Link to='/feedback' className='hover:underline'>
+          Feedback
         </Link>
       </div>
       <div>

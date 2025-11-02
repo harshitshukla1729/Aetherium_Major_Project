@@ -144,19 +144,13 @@ const AgentSurvey = () => {
     }
   };
 
-  // Start the conversation when the component loads
   useEffect(() => {
-    // We only send a greeting to kick things off.
-    // The system prompt will then guide the AI to ask the first question.
     callGeminiAPI([{ role: 'user', parts: [{ text: "Hello, I'm ready to start the survey." }] }]);
-  }, []); // Empty dependency array ensures this runs only once
-
-  // Scroll to the bottom of the chat on new messages
+  }, []); 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, assessment]);
 
-  // Handle sending a user's message
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading || assessment) return;
@@ -167,7 +161,6 @@ const AgentSurvey = () => {
     setMessages(newChatHistory);
     setInput('');
 
-    // Call the API with the new history
     await callGeminiAPI(newChatHistory);
   };
 
@@ -175,13 +168,13 @@ const AgentSurvey = () => {
     <div className="flex flex-col h-[calc(100vh-80px)] max-w-3xl mx-auto p-4" data-theme="emerald">
       <Toaster position="top-right" />
       
-      {/* Chat Messages Area */}
+     
       <div className="flex-1 overflow-y-auto bg-base-100 p-4 rounded-lg shadow-inner mb-4 space-y-4">
         {messages.map((msg, index) => (
           <div key={index} className={`chat ${msg.role === 'user' ? 'chat-end' : 'chat-start'}`}>
             <div className="chat-image avatar">
               <div className="w-10 rounded-full bg-base-300 flex items-center justify-center">
-                {/* Updated icons to emojis */}
+                
                 {msg.role === 'user' ? '👤' : '🤖'}
               </div>
             </div>
@@ -194,7 +187,7 @@ const AgentSurvey = () => {
           <div className="chat chat-start">
             <div className="chat-image avatar">
               <div className="w-10 rounded-full bg-base-300 flex items-center justify-center">
-                {/* Updated icon to emoji */}
+               
                 <span className="text-xl">🤖</span>
               </div>
             </div>
@@ -206,12 +199,12 @@ const AgentSurvey = () => {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Final Assessment Card */}
+      
       {assessment ? (
         <div className="card bg-base-100 shadow-xl border-2 border-primary">
           <div className="card-body">
             <h2 className="card-title text-2xl flex items-center">
-              {/* Updated icon to emoji */}
+             
               <span className="mr-2 text-2xl">📋</span> Your Assessment
             </h2>
             <div className="text-center my-4">
@@ -225,7 +218,6 @@ const AgentSurvey = () => {
             {assessment.keyAreas && assessment.keyAreas.length > 0 && (
               <div className="mt-4">
                 <h3 className="font-semibold mb-2">Key Areas of Concern:</h3>
-                {/* Updated format to use DaisyUI badges */}
                 <div className="flex flex-wrap gap-2">
                   {assessment.keyAreas.map((area, i) => (
                     <div key={i} className="badge badge-error badge-lg">{area}</div>
@@ -236,7 +228,6 @@ const AgentSurvey = () => {
           </div>
         </div>
       ) : (
-        /* Message Input Form */
         <form onSubmit={handleSend} className="flex gap-2">
           <input
             type="text"
@@ -247,7 +238,6 @@ const AgentSurvey = () => {
             disabled={isLoading}
           />
           <button type="submit" className="btn btn-primary btn-square" disabled={isLoading}>
-            {/* Updated icon to emoji */}
             {isLoading ? <span className="loading loading-spinner"></span> : <span className="text-xl">➤</span>}
           </button>
         </form>

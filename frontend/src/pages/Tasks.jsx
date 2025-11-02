@@ -32,6 +32,13 @@ export default function Tasks() {
           <h3 className='font-semibold text-lg mb-2'>Track your Activities</h3>
           <p className='text-gray-600 text-sm'>Schedule your weekly and daily tasks and schedule them</p>
         </div>
+        <div
+          onClick={() => navigate('/screen-time')}
+          className='cursor-pointer p-4 bg-white rounded-lg shadow hover:shadow-lg transition'
+        >
+          <h3 className='font-semibold text-lg mb-2'>Add your screen time</h3>
+          <p className='text-gray-600 text-sm'>Analyse your screen time and let us help you imporve</p>
+        </div>
          <div
           onClick={() => navigate('/feedback')}
           className='cursor-pointer p-4 bg-white rounded-lg shadow hover:shadow-lg transition'

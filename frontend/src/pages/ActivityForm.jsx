@@ -102,8 +102,6 @@ const ActivityForm = () => {
           </h1>
           
           <form onSubmit={handleSubmit} className="space-y-4">
-            
-           
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Activity Name</span>
@@ -205,6 +203,7 @@ const ActivityForm = () => {
             </div>
           </form>
         </div>
+  
       </div>
     </div>
   );

@@ -145,7 +145,13 @@ export default function Survey() {
           {language === 'en' ? 'हिन्दी में देखें' : 'View in English'}
         </button>
       </div>
-
+       <div
+          onClick={() => navigate('/agent-survey')}
+          className='cursor-pointer p-4 bg-white rounded-lg shadow hover:shadow-lg transition'
+        >
+          <h3 className='font-semibold text-lg mb-2'>Talk to a Chatbot!</h3>
+          <p className='text-gray-600 text-sm'>Feeling like rating does not give your issues a justice? Talk to an AI bot .</p>
+        </div>
       <form onSubmit={handleSubmit} className='space-y-6'>
         {/* Part 1 */}
         <div>
