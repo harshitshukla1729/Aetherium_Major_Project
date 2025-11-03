@@ -1,47 +1,36 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { RiDeleteBinLine } from 'react-icons/ri'; // Using Remix Icons
-import useAuth from '../hooks/useAuth'; // Using correct relative path
+import { RiDeleteBinLine } from 'react-icons/ri';
+import { useNavigate } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 
-// Helper function to get auth headers dynamically
 const getAuthConfig = () => {
   const token = localStorage.getItem('token');
   if (!token) {
-    toast.error("Authentication token not found. Please log in again.");
-    return null; 
+    toast.error('Please log in again.');
+    return null;
   }
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Cache-Control': 'no-cache',
-      Pragma: 'no-cache',
-      Expires: '0',
-    },
-  };
+  return { headers: { Authorization: `Bearer ${token}` } };
 };
 
-// Custom ProgressBar component from your design
 const ProgressBar = ({ completed, target }) => {
-  const percentage = target > 0 ? Math.min((completed / target) * 100, 100) : 0;
-  let color = 'bg-emerald-500'; // Default color
-  if (percentage < 50) color = 'bg-red-400';
-  else if (percentage < 100) color = 'bg-yellow-400';
-  else color = 'bg-green-600'; // Complete
-
+  const percent = target > 0 ? Math.min((completed / target) * 100, 100) : 0;
+  const color =
+    percent < 50 ? 'bg-blue-300' : percent < 100 ? 'bg-yellow-400' : 'bg-blue-500';
   return (
-    <div className='w-full bg-gray-200 rounded-full h-2 mt-1'>
+    <div className="w-full bg-gray-200 h-2 rounded-full">
       <div
         className={`${color} h-2 rounded-full transition-all duration-500`}
-        style={{ width: `${percentage}%` }}
+        style={{ width: `${percent}%` }}
       ></div>
     </div>
   );
 };
 
-const ActivityTracker = () => {
-  const { user } = useAuth(); // Get user state
+export default function ActivityTracker() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
   const [summary, setSummary] = useState({
     daily: { totalCompleted: 0, totalTarget: 0 },
@@ -53,287 +42,209 @@ const ActivityTracker = () => {
   const [durationToAdd, setDurationToAdd] = useState('');
   const [isModalLoading, setIsModalLoading] = useState(false);
 
-  const navigate = useNavigate();
-  const API_BASE_URL = 'http://localhost:3000/api/activities';
+  const API = 'http://localhost:3000/api/activities';
 
-  const formatDate = (date) =>
-    new Date(date).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-
-  // Combined fetch function
   const fetchData = useCallback(async () => {
-    if (!user) {
-      setLoading(false);
-      return; // Don't fetch if no user
-    }
-    
+    if (!user) return;
+    const auth = getAuthConfig();
+    if (!auth) return;
     setLoading(true);
-    const authConfig = getAuthConfig();
-    if (!authConfig) {
-      setLoading(false);
-      return;
-    }
-
     try {
-      const [activitiesRes, summaryRes] = await Promise.all([
-        axios.get(API_BASE_URL, authConfig),
-        axios.get(`${API_BASE_URL}/summary`, authConfig)
+      const [aRes, sRes] = await Promise.all([
+        axios.get(API, auth),
+        axios.get(`${API}/summary`, auth),
       ]);
-
-      const activitiesData = activitiesRes.data?.data || [];
-      setActivities(activitiesData.sort((a, b) => new Date(b.date) - new Date(a.date)));
-      
-      if (summaryRes.data?.data) {
-        setSummary(summaryRes.data.data);
-      }
-
-    } catch (err) {
-      console.error("Error fetching data:", err);
-      toast.error('Could not fetch data. Please log in again.');
+      setActivities(aRes.data?.data || []);
+      setSummary(sRes.data?.data || summary);
+    } catch {
+      toast.error('Error fetching data.');
     } finally {
       setLoading(false);
     }
-  }, [user]); // Add user as dependency
+  }, [user]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]); // Run when fetchData function is stable
+  }, [fetchData]);
 
-  const openModal = (activity) => {
-    setSelectedActivity(activity);
+  const openModal = (a) => {
+    setSelectedActivity(a);
     setDurationToAdd('');
-    document.getElementById('progress_modal')?.showModal();
+    document.getElementById('progress_modal').showModal();
   };
 
-  const handleProgressSubmit = async (e) => {
+  const updateProgress = async (e) => {
     e.preventDefault();
-    const numericDuration = Number(durationToAdd);
-    if (numericDuration <= 0 || isNaN(numericDuration)) {
-      return toast.error('Enter a valid number of minutes.');
-    }
-      
+    const minutes = Number(durationToAdd);
+    if (minutes <= 0) return toast.error('Enter valid minutes.');
     setIsModalLoading(true);
     try {
-      // Backend logic updates all matching tasks, so we must re-fetch
-      await axios.patch(
-        `${API_BASE_URL}/${selectedActivity._id}`,
-        { minutesToAdd: numericDuration },
-        getAuthConfig()
-      );
-      
-      toast.success('Progress updated!');
-      
-      // Re-fetch all data to show synced progress
-      await fetchData(); 
-      
-      document.getElementById('progress_modal')?.close();
+      await axios.patch(`${API}/${selectedActivity._id}`, { minutesToAdd: minutes }, getAuthConfig());
+      toast.success('Progress updated.');
+      fetchData();
+      document.getElementById('progress_modal').close();
     } catch {
-      toast.error('Failed to update progress.');
+      toast.error('Failed to update.');
     } finally {
       setIsModalLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Delete this activity?')) {
-      try {
-        await axios.delete(`${API_BASE_URL}/${id}`, getAuthConfig());
-        toast.success('Deleted successfully.');
-        // Re-fetch data to update UI
-        fetchData();
-      } catch {
-        toast.error('Failed to delete activity.');
-      }
+  const deleteActivity = async (id) => {
+    if (!window.confirm('Delete this activity?')) return;
+    try {
+      await axios.delete(`${API}/${id}`, getAuthConfig());
+      toast.success('Deleted.');
+      fetchData();
+    } catch {
+      toast.error('Delete failed.');
     }
   };
 
   const filtered = activities.filter((a) => a.taskType === activeTab);
+  const formatDate = (d) =>
+    new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  if (loading && activities.length === 0) // Only show full-page loader on initial load
+  if (loading)
     return (
-      <div className='flex justify-center items-center min-h-screen bg-emerald-50'>
-        <span className='loading loading-spinner loading-lg text-emerald-600'></span>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <span className="loading loading-spinner loading-lg text-blue-500"></span>
       </div>
     );
 
   return (
-    <>
-      <div className='min-h-screen bg-gradient-to-b from-white to-emerald-50 px-6 py-10 dark:from-slate-900 dark:to-slate-800'>
-        <div className='max-w-6xl mx-auto'>
-          {/* Header */}
-          <div className='flex flex-col sm:flex-row justify-between items-center mb-10 gap-4'>
-            <h1 className='text-4xl font-extrabold text-emerald-700 dark:text-emerald-400'>
-              Activity Tracker
-            </h1>
+    <div className="min-h-screen bg-gray-50 px-6 py-10">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-10">
+          <h1 className="text-3xl font-bold text-blue-600">Activity Tracker</h1>
+          <button
+            onClick={() => navigate('/activities/new')}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition"
+          >
+            + Add Activity
+          </button>
+        </div>
+
+        {/* Summary */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+          {[
+            { title: 'Daily Progress', data: summary.daily },
+            { title: 'Weekly Progress', data: summary.weekly },
+          ].map((s) => (
+            <div key={s.title} className="bg-white p-6 rounded-xl shadow-sm border">
+              <h2 className="text-xl font-semibold text-gray-700 mb-2">{s.title}</h2>
+              <p className="text-gray-600 mb-2">
+                <span className="font-bold text-blue-600">{s.data.totalCompleted}</span> /{' '}
+                {s.data.totalTarget} min
+              </p>
+              <ProgressBar completed={s.data.totalCompleted} target={s.data.totalTarget} />
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 mb-6">
+          {['Daily', 'Weekly'].map((t) => (
             <button
-              onClick={() => navigate('/activities/new')}
-              className='p-2 text-white btn btn-primary rounded-xl bg-emerald-600 border-none hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600'
+              key={t}
+              onClick={() => setActiveTab(t)}
+              className={`px-5 py-2 text-sm font-semibold border-b-2 transition ${
+                activeTab === t
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-blue-600'
+              }`}
             >
-              + Log New Activity
+              {t} Tasks
             </button>
-          </div>
+          ))}
+        </div>
 
-          {/* Summary */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-10'>
-            {[
-              { title: 'Daily Progress', data: summary.daily },
-              { title: 'Weekly Progress', data: summary.weekly },
-            ].map((s) => (
-              <div
-                key={s.title}
-                className='p-6 bg-white shadow-md rounded-2xl border border-gray-100 dark:bg-slate-800 dark:border-slate-700'
-              >
-                <h2 className='text-2xl font-semibold text-gray-800 dark:text-white mb-2'>
-                  {s.title}
-                </h2>
-                <p className='text-gray-600 dark:text-gray-300 mb-2'>
-                  <span className='font-bold text-emerald-600 dark:text-emerald-400'>
-                    {s.data.totalCompleted}
-                  </span>{' '}
-                  / {s.data.totalTarget} min
-                </p>
-                <ProgressBar
-                  completed={s.data.totalCompleted}
-                  target={s.data.totalTarget}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Tabs */}
-          <div role='tablist' className='tabs tabs-lifted tabs-lg mb-6'>
-            {['Daily', 'Weekly'].map((t) => (
-              <a
-                key={t}
-                role='tab'
-                className={`tab ${
-                  activeTab === t
-                    ? 'tab-active text-emerald-600 dark:text-emerald-400 font-semibold [--tab-bg:white] dark:[--tab-bg:rgb(30,41,59)]'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400'
-                }`}
-                onClick={() => setActiveTab(t)}
-              >
-                {t} Tasks
-              </a>
-            ))}
-             {/* This is a visual spacer to complete the tab-lifted look */}
-            <a role="tab" className="tab flex-1 cursor-default"></a>
-          </div>
-
-          {/* Table */}
-          <div className='overflow-x-auto bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-gray-100 dark:border-slate-700'>
-            <table className='table w-full text-gray-700 dark:text-gray-300'>
-              <thead className='bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'>
-                <tr>
-                  <th>Activity</th>
-                  <th>Progress</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length > 0 ? (
-                  filtered.map((a) => (
-                    <tr key={a._id} className='hover:bg-emerald-50 dark:hover:bg-slate-700'>
-                      <td className='font-medium text-lg'>{a.activityName}</td>
-                      <td>
-                        <span className='font-semibold'>
-                          {a.durationMinutes}
-                        </span>{' '}
-                        / {a.targetMinutes}
-                        <ProgressBar
-                          completed={a.durationMinutes}
-                          target={a.targetMinutes}
-                        />
-                      </td>
-                      <td>{formatDate(a.date)}</td>
-                      <td className='flex flex-col sm:flex-row gap-2'>
-                        <button
-                          onClick={() => openModal(a)}
-                          className='btn btn-sm bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-none dark:bg-emerald-800 dark:text-emerald-200 dark:hover:bg-emerald-700'
-                        >
-                          Log Progress
-                        </button>
-                        <button
-                          onClick={() => handleDelete(a._id)}
-                          className='btn btn-sm bg-red-100 text-red-600 hover:bg-red-200 border-none dark:bg-red-800 dark:text-red-200 dark:hover:bg-red-700'
-                        >
-                          <RiDeleteBinLine size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan='4' className='text-center py-10 text-gray-500 dark:text-gray-400'>
-                      No {activeTab.toLowerCase()} activities logged yet.
+        {/* Table */}
+        <div className="bg-white rounded-xl shadow-sm border overflow-x-auto">
+          <table className="table w-full text-sm text-gray-700">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="py-3 px-4 text-left">Activity</th>
+                <th className="py-3 px-4 text-left">Progress</th>
+                <th className="py-3 px-4 text-left">Date</th>
+                <th className="py-3 px-4 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length ? (
+                filtered.map((a) => (
+                  <tr key={a._id} className="hover:bg-blue-50">
+                    <td className="py-3 px-4 font-medium">{a.activityName}</td>
+                    <td className="py-3 px-4">
+                      {a.durationMinutes}/{a.targetMinutes} min
+                      <ProgressBar completed={a.durationMinutes} target={a.targetMinutes} />
+                    </td>
+                    <td className="py-3 px-4">{formatDate(a.date)}</td>
+                    <td className="py-3 px-4 flex gap-2">
+                      <button
+                        onClick={() => openModal(a)}
+                        className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-sm"
+                      >
+                        Log Progress
+                      </button>
+                      <button
+                        onClick={() => deleteActivity(a._id)}
+                        className="bg-red-100 hover:bg-red-200 text-red-600 px-2 py-1 rounded-lg"
+                      >
+                        <RiDeleteBinLine size={16} />
+                      </button>
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="text-center py-10 text-gray-500">
+                    No {activeTab.toLowerCase()} activities logged yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Modal */}
-      <dialog id='progress_modal' className='modal'>
-        <div className='modal-box rounded-2xl bg-white dark:bg-slate-800'>
-          <h3 className='font-bold text-lg text-emerald-700 dark:text-emerald-400 mb-3'>
-            Log Progress for{' '}
-            <span className='font-semibold'>
-              {selectedActivity?.activityName}
-            </span>
+      <dialog id="progress_modal" className="modal">
+        <div className="modal-box bg-white rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-blue-600 mb-4">
+            Log Progress – {selectedActivity?.activityName}
           </h3>
-          <form onSubmit={handleProgressSubmit}>
-            <div className='form-control py-4'>
-              <label className='label'>
-                <span className='label-text dark:text-gray-300'>Minutes to Add:</span>
-              </label>
-              <input
-                type='number'
-                placeholder='e.g., 30'
-                className='input input-bordered w-full rounded-lg dark:bg-slate-700 dark:border-slate-600'
-                value={durationToAdd}
-                onChange={(e) => setDurationToAdd(e.target.value)}
-                min='1'
-                required
-              />
-            </div>
-            <div className='modal-action'>
+          <form onSubmit={updateProgress}>
+            <label className="block text-gray-700 mb-2">Minutes to Add:</label>
+            <input
+              type="number"
+              min="1"
+              value={durationToAdd}
+              onChange={(e) => setDurationToAdd(e.target.value)}
+              className="input input-bordered w-full rounded-lg mb-4"
+              placeholder="e.g., 30"
+              required
+            />
+            <div className="flex justify-end gap-3">
               <button
-                type='button'
-                className='btn border-gray-300 bg-gray-50 hover:bg-gray-100 dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600'
-                onClick={() =>
-                  document.getElementById('progress_modal').close()
-                }
+                type="button"
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                onClick={() => document.getElementById('progress_modal').close()}
               >
                 Cancel
               </button>
               <button
-                type='submit'
-                className='btn bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-600'
+                type="submit"
                 disabled={isModalLoading}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
               >
-                {isModalLoading ? (
-                  <span className='loading loading-spinner'></span>
-                ) : (
-                  'Update'
-                )}
+                {isModalLoading ? <span className="loading loading-spinner"></span> : 'Update'}
               </button>
             </div>
           </form>
         </div>
-        <form method='dialog' className='modal-backdrop'>
-          <button>close</button>
-        </form>
       </dialog>
-    </>
+    </div>
   );
-};
-
-export default ActivityTracker;
-
+}

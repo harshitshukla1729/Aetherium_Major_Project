@@ -15,6 +15,7 @@ import ActivityTracker from './pages/ActivityTracker';
 import ActivityForm from './pages/ActivityForm'; 
 import AgentSurvey from './pages/AgentSurvey.jsx';
 import ScreenTimeLogger from './pages/ScreenTimeLogger.jsx'
+
 function App() {
   const { user, setUser, logout } = useAuth();
 

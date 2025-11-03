@@ -87,25 +87,28 @@ const ActivityForm = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100">
-      <div className="card w-full max-w-lg bg-white shadow-xl border border-gray-200 p-8 rounded-2xl relative transition-all hover:shadow-2xl">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 p-6">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-md hover:shadow-2xl transition-shadow duration-300 border border-gray-200 p-8">
+        {/* Back link */}
         <Link
           to="/activities"
-          className="absolute top-5 left-5 text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center gap-1"
+          className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1 mb-6"
         >
           ← Back to Tracker
         </Link>
 
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold text-emerald-700 mb-2">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-blue-700 mb-1">
             Log New Activity
           </h1>
           <p className="text-gray-500 text-sm">
-            Record your progress and stay consistent 💪
+            Stay consistent — track your daily or weekly goals 🌿
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Activity Name */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -113,14 +116,12 @@ const ActivityForm = () => {
             </label>
             <select
               name="activityName"
-              className="select select-bordered w-full rounded-lg bg-gray-50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
               value={formData.activityName}
               onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 px-3 py-2 outline-none transition-all"
               required
             >
-              <option value="" disabled>
-                Select an activity
-              </option>
+              <option value="">Select an activity</option>
               <option value="Basketball">Basketball</option>
               <option value="Badminton">Badminton</option>
               <option value="Coding">Coding</option>
@@ -129,6 +130,7 @@ const ActivityForm = () => {
             </select>
           </div>
 
+          {/* Custom Activity Name */}
           {formData.activityName === "Others" && (
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -138,9 +140,9 @@ const ActivityForm = () => {
                 type="text"
                 name="customActivityName"
                 placeholder="e.g., Volunteering"
-                className="input input-bordered w-full rounded-lg bg-gray-50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
                 value={formData.customActivityName}
                 onChange={handleChange}
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 px-3 py-2 outline-none transition-all"
                 required
               />
             </div>
@@ -153,9 +155,9 @@ const ActivityForm = () => {
             </label>
             <select
               name="taskType"
-              className="select select-bordered w-full rounded-lg bg-gray-50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
               value={formData.taskType}
               onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 px-3 py-2 outline-none transition-all"
               required
             >
               <option value="Daily">Daily</option>
@@ -164,7 +166,7 @@ const ActivityForm = () => {
           </div>
 
           {/* Target + Date */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Target (in minutes)
@@ -173,10 +175,10 @@ const ActivityForm = () => {
                 type="number"
                 name="targetMinutes"
                 placeholder="e.g., 120"
-                className="input input-bordered w-full rounded-lg bg-gray-50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
                 value={formData.targetMinutes}
                 onChange={handleChange}
                 min="1"
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 px-3 py-2 outline-none transition-all"
                 required
               />
             </div>
@@ -187,20 +189,20 @@ const ActivityForm = () => {
               <input
                 type="date"
                 name="date"
-                className="input input-bordered w-full rounded-lg bg-gray-50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
                 value={formData.date}
                 onChange={handleChange}
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 px-3 py-2 outline-none transition-all"
                 required
               />
             </div>
           </div>
 
-          {/* Submit */}
-          <div className="pt-4">
+          {/* Submit Button */}
+          <div className="pt-2">
             <button
               type="submit"
-              className="btn w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 border-none text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
               disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center"
             >
               {loading ? (
                 <span className="loading loading-spinner"></span>

@@ -8,31 +8,26 @@ export default function Survey() {
 
   // 🔹 English question sets
   const questionSet1_en = [
-    // A. Usage Habits
     'Do you spend more time online/on your phone than you initially intended?',
     'Do you check your phone first thing in the morning or last before sleeping?',
     'Do you use your phone even while eating or during family time?',
     'Do you continue using your phone late into the night, even when you should be sleeping?',
     'Do you use multiple devices (phone + laptop + tablet) simultaneously to stay online?',
-    // B. Emotional Dependence
     'Do you feel restless, moody, or irritated when you can’t access the internet/phone?',
     'Do you feel anxious when you have no notifications or messages?',
     'Do you use the internet/mobile to escape from problems or stress?',
     'Do you feel guilty after spending excessive time online?',
     'Do you feel happier or more comfortable online than offline?',
-    // C. Impact on Daily Life
     'Do you neglect studies, work, or sleep because of internet/mobile use?',
     'Do you get distracted by phone notifications while studying or working?',
     'Do you postpone important tasks because you were using your phone/internet?',
     'Do you feel your real-life/social interactions are reducing due to online activity?',
     'Do you feel you are missing opportunities because of spending too much time online?',
-    // D. Physical & Mental Health
     'Do you experience headaches, eye strain, or reduced physical activity due to screen time?',
     'Do you feel more tired or lazy after long mobile/internet usage?',
     'Do you think your internet/mobile habits affect your mental health (stress, anxiety, mood swings)?',
     'How would you rate your focus compared to when you are not online?',
     'How would you rate your overall happiness and efficiency in daily life?',
-    // E. Control & Awareness
     'Do you lie to family or friends about how much time you spend online?',
     'Do you try to reduce your screen time but fail repeatedly?',
     'Do you feel uncomfortable or bored when you are offline?',
@@ -85,16 +80,13 @@ export default function Survey() {
     'क्या आप अपने कार्यस्थल की सिफारिश दूसरों को करेंगे?',
   ];
 
-  // 🔹 State for language and questions
+  // 🔹 State
   const [language, setLanguage] = useState('en');
   const [questionSet1, setQuestionSet1] = useState(questionSet1_en);
   const [questionSet2, setQuestionSet2] = useState(questionSet2_en);
-
   const [part1, setPart1] = useState(Array(questionSet1.length).fill(3));
   const [part2, setPart2] = useState(Array(questionSet2.length).fill(3));
-  const [message, setMessage] = useState('');
 
-  // 🔹 Toggle between English and Hindi
   const toggleLanguage = () => {
     if (language === 'en') {
       setLanguage('hi');
@@ -116,110 +108,98 @@ export default function Survey() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/survey/submit', {
-        scoresPart1: part1,
-        scoresPart2: part2,
-      });
+      await api.post('/survey/submit', { scoresPart1: part1, scoresPart2: part2 });
       toast.success('Survey submitted successfully!');
-      navigate('/tasks', {
-        state: { message: 'Survey submitted successfully!' },
-      });
+      navigate('/tasks', { state: { message: 'Survey submitted successfully!' } });
     } catch (err) {
       if (err.response?.status === 401) navigate('/login');
-      else {
-        const errMsg = err.response?.data?.message || 'Submission failed';
-        toast.error(errMsg);
-      }
+      else toast.error(err.response?.data?.message || 'Submission failed');
     }
   };
 
   return (
-    <div className='p-6 max-w-3xl mx-auto'>
-      <div className='flex justify-between items-center mb-4'>
-        <h2 className='text-xl font-bold'>Survey</h2>
-        <button
-          type='button'
-          onClick={toggleLanguage}
-          className='bg-gray-200 px-3 py-1 rounded hover:bg-gray-300 transition'
-        >
-          {language === 'en' ? 'हिन्दी में देखें' : 'View in English'}
-        </button>
-      </div>
-       <div
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 py-10 px-6">
+      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-2xl p-8 border border-gray-200">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-blue-700">📋 {language === 'en' ? 'Wellbeing & Usage Survey' : 'कल्याण और उपयोग सर्वेक्षण'}</h2>
+          <button
+            onClick={toggleLanguage}
+            className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition"
+          >
+            {language === 'en' ? 'हिन्दी में देखें' : 'View in English'}
+          </button>
+        </div>
+
+        {/* Chatbot Card */}
+        <div
           onClick={() => navigate('/agent-survey')}
-          className='cursor-pointer p-4 bg-white rounded-lg shadow hover:shadow-lg transition'
+          className="cursor-pointer mb-8 p-5 bg-gradient-to-r from-blue-50 to-white border border-blue-200 rounded-xl hover:shadow-lg transition"
         >
-          <h3 className='font-semibold text-lg mb-2'>Talk to a Chatbot!</h3>
-          <p className='text-gray-600 text-sm'>Feeling like rating does not give your issues a justice? Talk to an AI bot .</p>
-        </div>
-      <form onSubmit={handleSubmit} className='space-y-6'>
-        {/* Part 1 */}
-        <div>
-          <h3 className='font-semibold mb-2'>
-            {language === 'en'
-              ? 'Part 1 - choose 1 to 5'
-              : 'भाग 1 - 1 से 5 चुनें'}
+          <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2">
+            🤖 Talk to a Chatbot!
           </h3>
-          <div className='grid grid-cols-1 gap-4'>
-            {questionSet1.map((q, idx) => (
-              <div key={idx} className='flex items-center gap-2'>
-                <label className='w-8'>Q{idx + 1}</label>
-                <span className='flex-1'>{q}</span>
-                <select
-                  value={part1[idx]}
-                  onChange={(e) =>
-                    setValue(part1, setPart1, idx, e.target.value)
-                  }
-                  className='p-1 border rounded w-16'
-                >
-                  {[1, 2, 3, 4, 5].map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </div>
+          <p className="text-gray-600 text-sm mt-1">
+            Feeling like ratings don’t express you fully? Chat with an AI bot instead.
+          </p>
         </div>
 
-        {/* Part 2 */}
-        <div>
-          <h3 className='font-semibold mb-2'>
-            {language === 'en'
-              ? 'Part 2 - choose 1 to 5'
-              : 'भाग 2 - 1 से 5 चुनें'}
-          </h3>
-          <div className='grid grid-cols-1 gap-4'>
-            {questionSet2.map((q, idx) => (
-              <div key={idx} className='flex items-center gap-2'>
-                <label className='w-8'>Q{idx + 1}</label>
-                <span className='flex-1'>{q}</span>
-                <select
-                  value={part2[idx]}
-                  onChange={(e) =>
-                    setValue(part2, setPart2, idx, e.target.value)
-                  }
-                  className='p-1 border rounded w-16'
-                >
-                  {[1, 2, 3, 4, 5].map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Part 1 */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+              {language === 'en' ? 'Part 1 – Rate from 1 (Never) to 5 (Always)' : 'भाग 1 – 1 (कभी नहीं) से 5 (हमेशा) तक चुनें'}
+            </h3>
+            <div className="space-y-4">
+              {questionSet1.map((q, idx) => (
+                <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition">
+                  <span className="flex-1 text-gray-700">{`${idx + 1}. ${q}`}</span>
+                  <select
+                    value={part1[idx]}
+                    onChange={(e) => setValue(part1, setPart1, idx, e.target.value)}
+                    className="border border-gray-300 rounded-md px-2 py-1 w-20 text-center bg-white focus:ring-2 focus:ring-blue-400"
+                  >
+                    {[1, 2, 3, 4, 5].map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <button
-          type='submit'
-          className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition'
-        >
-          {language === 'en' ? 'Submit Survey' : 'सर्वे सबमिट करें'}
-        </button>
-      </form>
+          {/* Part 2 */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+              {language === 'en' ? 'Part 2 – Workplace Questions' : 'भाग 2 – कार्यस्थल संबंधित प्रश्न'}
+            </h3>
+            <div className="space-y-4">
+              {questionSet2.map((q, idx) => (
+                <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition">
+                  <span className="flex-1 text-gray-700">{`${idx + 1}. ${q}`}</span>
+                  <select
+                    value={part2[idx]}
+                    onChange={(e) => setValue(part2, setPart2, idx, e.target.value)}
+                    className="border border-gray-300 rounded-md px-2 py-1 w-20 text-center bg-white focus:ring-2 focus:ring-blue-400"
+                  >
+                    {[1, 2, 3, 4, 5].map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+          >
+            {language === 'en' ? 'Submit Survey' : 'सर्वे सबमिट करें'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
