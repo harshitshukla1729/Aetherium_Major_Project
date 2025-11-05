@@ -124,8 +124,8 @@ const ActivityForm = () => {
               <option value="">Select an activity</option>
               <option value="Basketball">Basketball</option>
               <option value="Badminton">Badminton</option>
-              <option value="Coding">Coding</option>
-              <option value="Reading">Reading</option>
+              <option value="Swimming">Swimming</option>
+              <option value="Cricket">Cricket</option>
               <option value="Others">Others</option>
             </select>
           </div>

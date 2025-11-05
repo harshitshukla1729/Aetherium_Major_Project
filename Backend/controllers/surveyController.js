@@ -101,18 +101,26 @@ const analyzeSurveyResults = (scoresSet1, scoresSet2, scoresSet3, thresholds) =>
 
   let riskLevel = "";
   let suggestions = "";
+  let actionableGoal = ""; // New actionable goal
+  let actionableGoal_hi = ""; // Hindi version
 
   // --- DYNAMIC THRESHOLDS ---
   // Use the calculated percentiles from the database instead of static 33/66
   if (percentage < thresholds.p33) {
     riskLevel = "Low Risk";
     suggestions = "Based on your responses, your digital habits appear balanced and healthy compared to others. Keep maintaining this positive mix of online and offline activities.";
+    actionableGoal = "Great job! Try to schedule at least 2-3 hours of dedicated offline or outdoor activities this week.";
+    actionableGoal_hi = "बहुत बढ़िया! इस सप्ताह कम से कम 2-3 घंटे समर्पित ऑफ़लाइन या बाहरी गतिविधियों के लिए निर्धारित करने का प्रयास करें।";
   } else if (percentage < thresholds.p66) {
     riskLevel = "Moderate Risk";
     suggestions = "Your responses indicate some potential issues with digital dependency, especially regarding its impact on your daily tasks and mood. This is a common pattern. We suggest you start actively scheduling 'offline' time and try setting some goals in your Activity Tracker.";
+    actionableGoal = "Let's set a goal: Aim for at least 1 hour of outdoor activity daily and try to limit non-essential screen time to 2-3 hours per day.";
+    actionableGoal_hi = "आइए एक लक्ष्य निर्धारित करें: प्रतिदिन कम से कम 1 घंटे की बाहरी गतिविधि का लक्ष्य रखें और गैर-जरूरी स्क्रीन समय को प्रतिदिन 2-3 घंटे तक सीमित करने का प्रयास करें।";
   } else {
     riskLevel = "High Risk";
     suggestions = "Your survey responses show a high level of dependency on digital devices, which appears to be impacting your productivity and well-being. We strongly recommend setting firm boundaries and using the Activity Tracker to build healthier habits. It may also be beneficial to speak with a friend, family member, or professional.";
+    actionableGoal = "A strong goal for you: Actively replace 1-2 hours of daily screen time with an offline hobby or outdoor activity. Start small and build from there.";
+    actionableGoal_hi = "आपके लिए एक मजबूत लक्ष्य: प्रतिदिन 1-2 घंटे के स्क्रीन समय को सक्रिय रूप से किसी ऑफ़लाइन शौक या बाहरी गतिविधि से बदलें। छोटी शुरुआत करें और उस पर आगे बढ़ें।";
   }
 
   // Add Hindi suggestions
@@ -133,6 +141,8 @@ const analyzeSurveyResults = (scoresSet1, scoresSet2, scoresSet3, thresholds) =>
   return {
     riskLevel,
     suggestions,
+    actionableGoal, // Send the new goal
+    actionableGoal_hi, // Send the Hindi goal
     totalScore: weightedScore, // Now stores the weighted score
     questionsAnswered,
     percentage: parseFloat(percentage.toFixed(1)),
@@ -141,7 +151,7 @@ const analyzeSurveyResults = (scoresSet1, scoresSet2, scoresSet3, thresholds) =>
 
 // @desc    Submit a new survey (now handles partial submissions)
 // @route   POST /api/survey/submit
-// @access  Private
+// @access  Private (optional)
 export const submitSurvey = async (req, res) => {
   try {
     const { scoresSet1, scoresSet2, scoresSet3 } = req.body;
@@ -188,40 +198,44 @@ export const submitSurvey = async (req, res) => {
     // 2. Run Analysis for the *current user* using the dynamic thresholds
     const assessment = analyzeSurveyResults(scoresSet1, scoresSet2, scoresSet3, thresholds);
 
-    // 3. Prepare data for the database
-    const surveyData = {
-      userId: req.user.id,
-      scoresSet1,
-      riskLevel: assessment.riskLevel,
-      totalScore: assessment.totalScore, // Store the new weighted score
-      questionsAnswered: assessment.questionsAnswered,
-      percentage: assessment.percentage, // Store the user's percentage
-    };
+    // --- FIX: Only save to DB if the user is logged in (req.user exists) ---
+    // The `attachUserIfPresent` middleware makes `req.user` available if logged in,
+    // or `undefined` if they are a guest.
+    if (req.user && req.user.id) {
+      // 3. Prepare data for the database
+      const surveyData = {
+        userId: req.user.id, // This is now safe
+        scoresSet1,
+        riskLevel: assessment.riskLevel,
+        totalScore: assessment.totalScore, // Store the new weighted score
+        questionsAnswered: assessment.questionsAnswered,
+        percentage: assessment.percentage, // Store the user's percentage
+      };
 
-    // Only add sets to the DB if they were submitted
-    if (scoresSet2) {
-      surveyData.scoresSet2 = scoresSet2;
-    }
-    if (scoresSet3) {
-      surveyData.scoresSet3 = scoresSet3;
-    }
-
-    // 4. Use findOneAndUpdate to create or update the survey for the user
-    // This ensures one user has only one survey response
-    const updatedSurvey = await Survey.findOneAndUpdate(
-      { userId: req.user.id }, // Find by user ID
-      surveyData, // Data to update or insert
-      { 
-        new: true, // Return the new/updated document
-        upsert: true, // Create a new document if one doesn't exist
-        runValidators: true, // Run schema validation
+      // Only add sets to the DB if they were submitted
+      if (scoresSet2) {
+        surveyData.scoresSet2 = scoresSet2;
       }
-    );
+      if (scoresSet3) {
+        surveyData.scoresSet3 = scoresSet3;
+      }
 
-    // 5. Send the assessment results back to the frontend
+      // 4. Use findOneAndUpdate to create or update the survey for the user
+      await Survey.findOneAndUpdate(
+        { userId: req.user.id }, // Find by user ID
+        surveyData, // Data to update or insert
+        { 
+          new: true, // Return the new/updated document
+          upsert: true, // Create a new document if one doesn't exist
+          runValidators: true, // Run schema validation
+        }
+      );
+    }
+    // --- END OF FIX ---
+
+    // 5. Send the assessment results back to the frontend (for both guests and users)
     res.status(201).json({ 
       message: 'Survey submitted successfully!',
-      data: updatedSurvey,
       assessment: assessment // Send the new assessment object
     });
 

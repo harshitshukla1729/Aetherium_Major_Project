@@ -24,7 +24,7 @@ app.options(/.*/, cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/api/survey', surveyRoutes);
 app.use("/api/activities", activityRoutes);
 app.get('/', (req, res) => res.json('hello world'));

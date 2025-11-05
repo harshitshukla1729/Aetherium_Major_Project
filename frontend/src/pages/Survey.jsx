@@ -246,7 +246,8 @@ export default function Survey() {
 
     try {
       // Use the 'api' instance which already has the token
-      const res = await api.post('/survey/submit', dataToSend);
+      // This path MUST match your backend routes
+      const res = await api.post('/api/survey/submit', dataToSend); 
       
       if (res.data && res.data.assessment) {
         setAssessmentResult(res.data.assessment);
@@ -267,6 +268,22 @@ export default function Survey() {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // --- NEW: Helper to get classes for the modal alert ---
+  const getRiskClasses = () => {
+    if (!assessmentResult) return { bg: 'bg-gray-100', text: 'text-gray-800', radial: 'text-gray-500' };
+    
+    switch (assessmentResult.riskLevel) {
+      case 'Low Risk':
+        return { bg: 'bg-green-50', text: 'text-green-800', radial: 'text-green-500' };
+      case 'Moderate Risk':
+        return { bg: 'bg-yellow-50', text: 'text-yellow-800', radial: 'text-yellow-500' };
+      case 'High Risk':
+        return { bg: 'bg-red-50', text: 'text-red-800', radial: 'text-red-500' };
+      default:
+        return { bg: 'bg-gray-100', text: 'text-gray-800', radial: 'text-gray-500' };
     }
   };
 
@@ -312,7 +329,7 @@ export default function Survey() {
             />
             {currentSet === 1 && (
               <div className="flex flex-col sm:flex-row gap-4">
-                <button onClick={handleSubmit} className="btn btn-success flex-1" disabled={isSubmitting}>
+                <button onClick={handleSubmit} className="btn btn-success text-black flex-1" disabled={isSubmitting}>
                   {isSubmitting ? <span className="loading loading-spinner loading-sm"></span> : (language === 'en' ? 'Submit Set 1 & Get Assessment' : 'सेट 1 सबमिट करें')}
                 </button>
                 <button onClick={() => setCurrentSet(2)} className="btn btn-primary btn-outline flex-1">
@@ -333,7 +350,7 @@ export default function Survey() {
                 />
                 {currentSet === 2 && (
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <button onClick={handleSubmit} className="btn btn-success flex-1" disabled={isSubmitting}>
+                    <button onClick={handleSubmit} className="btn btn-success text-black flex-1" disabled={isSubmitting}>
                       {isSubmitting ? <span className="loading loading-spinner loading-sm"></span> : (language === 'en' ? 'Submit Set 1 & 2' : 'सेट 1 और 2 सबमिट करें')}
                     </button>
                     <button onClick={() => setCurrentSet(3)} className="btn btn-primary btn-outline flex-1">
@@ -354,7 +371,7 @@ export default function Survey() {
                   scoreKey="set3"
                   setValue={setValue}
                 />
-                <button onClick={handleSubmit} className="btn btn-success w-full" disabled={isSubmitting}>
+                <button onClick={handleSubmit} className="btn btn-success text-black w-full" disabled={isSubmitting}>
                   {isSubmitting ? <span className="loading loading-spinner loading-sm"></span> : (language === 'en' ? 'Submit Final Assessment' : 'अंतिम मूल्यांकन सबमिट करें')}
                 </button>
               </>
@@ -364,46 +381,75 @@ export default function Survey() {
         </div>
       </div>
 
-      {/* --- Assessment Results Modal --- */}
+      {/* --- ASSESSMENT RESULTS MODAL (REDESIGNED) --- */}
       <dialog id="assessment_modal" className="modal">
-        <div className="modal-box bg-white">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-          </form>
+        <div className="modal-box bg-white max-w-lg p-0">
           {assessmentResult && (
             <>
-              <h3 className="font-bold text-2xl text-blue-700">
-                {language === 'en' ? 'Your Assessment' : 'आपका मूल्यांकन'}
-              </h3>
-              
-              <div className="text-center my-6">
-                <div className={`radial-progress ${
-                  assessmentResult.riskLevel === 'High Risk' ? 'text-red-500' : 
-                  assessmentResult.riskLevel === 'Moderate Risk' ? 'text-yellow-500' : 'text-green-500'
-                }`} style={{ "--value": assessmentResult.percentage, "--size": "8rem", "--thickness": "0.7rem" }}>
-                  <span className="font-bold text-2xl">{assessmentResult.percentage}%</span>
-                </div>
-                <div className="text-xl font-semibold mt-3">{assessmentResult.riskLevel}</div>
-                <p className="text-sm text-gray-500">({assessmentResult.questionsAnswered} {language === 'en' ? 'questions answered' : 'प्रश्नों के उत्तर दिए गए'})</p>
+              {/* Header with Title and Close Button */}
+              <div className="flex justify-between items-center p-6 border-b">
+                <h3 className="font-bold text-2xl text-blue-700">
+                  {language === 'en' ? 'Your Assessment' : 'आपका मूल्यांकन'}
+                </h3>
+                <form method="dialog">
+                  <button className="btn btn-sm btn-circle btn-ghost">✕</button>
+                </form>
               </div>
 
-              <h4 className="font-semibold text-lg text-gray-800">
-                {language === 'en' ? 'Suggestions for you:' : 'आपके लिए सुझाव:'}
-              </h4>
-              <p className="py-4 text-gray-600">{assessmentResult.suggestions}</p>
-              
-              <button 
-                className="btn btn-primary w-full mt-4 bg-blue-600 hover:bg-blue-700 border-none"
-                onClick={() => {
-                  document.getElementById('assessment_modal').close();
-                  navigate('/tasks');
-                }}
-              >
-                {language === 'en' ? 'Go to Tasks' : 'टास्क पर जाएं'}
-              </button>
+              {/* Body Content */}
+              <div className="p-6">
+                <div className="text-center my-4">
+                  <div 
+                    className={`radial-progress ${getRiskClasses().radial}`} 
+                    style={{ "--value": assessmentResult.percentage, "--size": "8rem", "--thickness": "0.7rem" }}
+                  >
+                    <span className="font-bold text-2xl text-gray-800">{assessmentResult.percentage}%</span>
+                  </div>
+                  <div className={`text-2xl font-semibold mt-4 ${getRiskClasses().text}`}>{assessmentResult.riskLevel}</div>
+                  <p className="text-sm text-gray-500">({assessmentResult.questionsAnswered} {language === 'en' ? 'questions answered' : 'प्रश्नों के उत्तर दिए गए'})</p>
+                </div>
+
+                {/* Suggestions Alert Box */}
+                <div role="alert" className={`alert ${getRiskClasses().bg} ${getRiskClasses().text} border-l-4 ${getRiskClasses().radial} border-opacity-30`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <div>
+                    <h3 className="font-bold">{language === 'en' ? 'Suggestions' : 'सुझाव'}</h3>
+                    <div className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>{language === 'en' ? assessmentResult.suggestions : (assessmentResult.suggestions_hi || assessmentResult.suggestions)}</div>
+                  </div>
+                </div>
+
+                {/* Actionable Goal */}
+                <div className="mt-6">
+                   <h4 className="font-semibold text-lg text-gray-800">
+                    {language === 'en' ? 'Recommended Goal:' : 'अनुशंसित लक्ष्य:'}
+                  </h4>
+                  <div className="p-4 bg-blue-50 text-blue-800 rounded-lg mt-2 text-center">
+                    <span className="font-bold text-lg">
+                      {language === 'en' ? assessmentResult.actionableGoal : (assessmentResult.actionableGoal_hi || assessmentResult.actionableGoal)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Button */}
+              <div className="modal-action p-6 bg-gray-50 rounded-b-2xl">
+                <button 
+                  className="btn btn-primary w-full bg-blue-600 hover:bg-blue-700 border-none"
+                  onClick={() => {
+                    document.getElementById('assessment_modal').close();
+                    navigate('/tasks');
+                  }}
+                >
+                  {language === 'en' ? 'Go to Tasks' : 'टास्क पर जाएं'}
+                </button>
+              </div>
             </>
           )}
         </div>
+        {/* Click outside to close */}
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
       </dialog>
     </>
   );

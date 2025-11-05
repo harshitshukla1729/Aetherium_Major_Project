@@ -47,9 +47,7 @@ function App() {
           <Route
             path='/survey'
             element={
-              <Protected>
                 <Survey />
-              </Protected>
             }
           />
             <Route
