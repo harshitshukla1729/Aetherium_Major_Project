@@ -1,4 +1,3 @@
-// models/surveyModel.js
 import mongoose from "mongoose";
 
 const surveySchema = new mongoose.Schema({
@@ -7,36 +6,33 @@ const surveySchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  scoresPart1: {
+  scoresSet1: {
     type: [Number],
-    required: true,
-    validate: {
-      validator: (arr) => arr.length === 25 && arr.every(score => score >= 1 && score <= 5),
-      message: 'Scores for Part 1 must be an array of 20 numbers between 1 and 5.',
-    },
+    required: [true, 'Score Set 1 is required.'],
+    validate: { validator: (arr) => arr.length === 25, message: 'Set 1 must have 25 answers.' },
   },
-  scoresPart2: {
+  scoresSet2: {
     type: [Number],
-    required: true,
-    validate: {
-      validator: (arr) => arr.length === 5 && arr.every(score => score >= 1 && score <= 5),
-      message: 'Scores for Part 2 must be an array of 5 numbers between 1 and 5.',
-    },
+    validate: { validator: (arr) => arr.length === 25, message: 'Set 2 must have 25 answers.' },
+    default: undefined, // This makes it optional
   },
-  totalScorePart1: {
-    type: Number,
-    required: true,
+  scoresSet3: {
+    type: [Number],
+    validate: { validator: (arr) => arr.length === 20, message: 'Set 3 must have 20 answers.' },
+    default: undefined, // This makes it optional
   },
-  totalScorePart2: {
-    type: Number,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  riskLevel: { type: String },
+  totalScore: { type: Number }, // This is the weighted score
+  questionsAnswered: { type: Number },
+  
+  // This field stores the user's final percentage (0-100)
+  // It's used to calculate the dynamic thresholds for new users.
+  percentage: { 
+    type: Number 
+  }
+}, { timestamps: true });
 
+// This logic prevents Mongoose from recompiling the model during hot-reloads
 const Survey = mongoose.models.Survey || mongoose.model("Survey", surveySchema);
 
 export default Survey;

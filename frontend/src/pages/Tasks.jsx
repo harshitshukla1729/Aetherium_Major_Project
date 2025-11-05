@@ -15,7 +15,7 @@ export default function Tasks() {
           onClick={() => navigate('/survey')}
           className='cursor-pointer p-4 bg-white rounded-lg shadow hover:shadow-lg transition'
         >
-          <h3 className='font-semibold text-lg mb-2'>📝 Take Survey</h3>
+          <h3 className='font-semibold text-lg mb-2'>Take Survey</h3>
           <p className='text-gray-600 text-sm'>Complete your wellness survey</p>
         </div>
         <div
