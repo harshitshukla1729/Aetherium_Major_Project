@@ -29,7 +29,10 @@ export default function Navbar({ user, onLogout }) {
           Tracker
         </Link>
         <Link to='/screen-time' className='hover:underline'>
-          Screen time
+          Screen-time
+        </Link>
+        <Link to='/planner' className='hover:underline'>
+          Planner
         </Link>
         <Link to='/feedback' className='hover:underline'>
           Feedback

@@ -15,7 +15,7 @@ import ActivityTracker from './pages/ActivityTracker';
 import ActivityForm from './pages/ActivityForm'; 
 import AgentSurvey from './pages/AgentSurvey.jsx';
 import ScreenTimeLogger from './pages/ScreenTimeLogger.jsx'
-
+import Planner from './pages/Planner';
 function App() {
   const { user, setUser, logout } = useAuth();
 
@@ -55,6 +55,14 @@ function App() {
             element={
               <Protected>
                 <ActivityTracker />
+              </Protected>
+            }
+          />
+           <Route
+            path="/planner"
+            element={
+              <Protected>
+                <Planner />
               </Protected>
             }
           />

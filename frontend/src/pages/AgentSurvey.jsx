@@ -2,28 +2,28 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 
 const systemInstruction = {
-  parts: [{
-    text: `You are a kind, empathetic, and non-judgmental wellness assistant. Your goal is to have a natural, flowing conversation with a user to help them understand their digital habits.
+  parts: [{
+    text: `You are a kind, empathetic, and non-judgmental wellness assistant. Your goal is to have a natural, flowing conversation with a user to help them understand their digital habits.
 
 RULES:
-1.  **Language Detection:** You are fluent in both English and Hindi. Detect the user's language from their first message. Conduct the ENTIRE survey in that language. If they speak Hindi, you MUST translate and paraphrase all your questions and responses into natural, conversational Hindi.
-2.  **Start:** Start with a brief, warm greeting in the detected language.
-3.  **No Ratings:** DO NOT ask the user to rate themselves. Ask the 70 questions (listed below) one by one, conversationally.
-4.  **Internal Rating:** After the user gives a conversational answer, you MUST internally and privately assign a severity rating from 1 (Very Healthy) to 5 (Very High Dependency). DO NOT state this rating to the user.
-5.  **Conversational Flow:** Be conversational. Acknowledge the user's answer (e.g., "I see," "Thanks for sharing," "That makes sense," "Okay, got it") before moving to the next question.
-6.  **No Numbers/Verbatim:** NEVER use the question numbers (like '1.', '25.'). DO NOT repeat the questions verbatim. Paraphrase them to sound human.
-7.  **3-Set Structure:**
-8.  **After Set 1 (Question 25):** STOP. Ask (in their language) if they are comfortable continuing to Set 2 (25 more questions).
-9.  **If user says NO:** Stop. Respond ONLY with the JSON assessment object based on your internal ratings for the 25 questions.
+1.  **Language Detection:** You are fluent in both English and Hindi. Detect the user's language from their first message. Conduct the ENTIRE survey in that language. If they speak Hindi, you MUST translate and paraphrase all your questions and responses into natural, conversational Hindi.
+2.  **Start:** Start with a brief, warm greeting in the detected language.
+3.  **No Ratings:** DO NOT ask the user to rate themselves. Ask the 70 questions (listed below) one by one, conversationally.
+4.  **Internal Rating:** After the user gives a conversational answer, you MUST internally and privately assign a severity rating from 1 (Very Healthy) to 5 (Very High Dependency). DO NOT state this rating to the user.
+5.  **Conversational Flow:** Be conversational. Acknowledge the user's answer (e.g., "I see," "Thanks for sharing," "That makes sense," "Okay, got it") before moving to the next question.
+6.  **No Numbers/Verbatim:** NEVER use the question numbers (like '1.', '25.'). DO NOT repeat the questions verbatim. Paraphrase them to sound human.
+7.  **3-Set Structure:**
+8.  **After Set 1 (Question 25):** STOP. Ask (in their language) if they are comfortable continuing to Set 2 (25 more questions).
+9.  **If user says NO:** Stop. Respond ONLY with the JSON assessment object based on your internal ratings for the 25 questions.
 10. **After Set 2 (Question 50):** STOP. Ask (in their language) if they are comfortable continuing to the final Set 3 (20 questions).
 11. **If user says NO:** Stop. Respond ONLY with the JSON assessment object based on your internal ratings for the 50 questions.
 12. **After Set 3 (Question 70):** Thank them. Respond ONLY with the final JSON assessment object based on all 70 questions.
 13. **JSON Structure:** The final JSON object must always be:
-    {
-      "severityScore": (A number from 1-10, calculated from your internal 1-5 ratings),
-      "assessment": (A short, supportive summary *in the user's language*),
-      "keyAreas": (An array of strings listing the 2-3 most concerning categories)
-    }
+    {
+      "severityScore": (A number from 1-10, calculated from your internal 1-5 ratings),
+      "assessment": (A short, supportive summary *in the user's language*),
+      "keyAreas": (An array of strings listing the 2-3 most concerning categories)
+    }
 
 ---
 THE 70 QUESTIONS (Mini Project Questionnaire):
@@ -103,7 +103,7 @@ THE 70 QUESTIONS (Mini Project Questionnaire):
 68. Do you constantly refresh apps or websites without a specific reason?
 69. Have you ever missed a deadline because you were online?
 70. Do you feel calmer only after checking all your notifications?`
-  }]
+  }]
 };
 
 // Check for Web Speech API
@@ -111,384 +111,399 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 const synthesis = window.speechSynthesis;
 
 const AgentSurvey = () => {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [assessment, setAssessment] = useState(null);
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeakingEnabled, setIsSpeakingEnabled] = useState(true); // Enabled by default
-  const [voices, setVoices] = useState([]); // State to hold available voices
-  const [conversationStarted, setConversationStarted] = useState(false); // New state to control start
-  
-  const chatEndRef = useRef(null);
-  const recognitionRef = useRef(null);
-  
-  // NOTE: You have hardcoded your API key.
-  // For security, move this to a .env file (VITE_GEMINI_API_KEY=your_key)
-  // and read it with: const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  const apiKey = 'AIzaSyD3-qPZyWY83tV-irlzUCc6EyDxm1ggI4o';
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [assessment, setAssessment] = useState(null);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeakingEnabled, setIsSpeakingEnabled] = useState(true); 
+  const [voices, setVoices] = useState([]); 
+  const [conversationStarted, setConversationStarted] = useState(false); 
+  
+  const chatEndRef = useRef(null);
+  const recognitionRef = useRef(null);
+  
+  // SECURITY WARNING: This key is publicly exposed! 
+  // FOR PRODUCTION, you must use a secure backend/serverless function.
+  const apiKey = 'AIzaSyD3-qPZyWY83tV-irlzUCc6EyDxm1ggI4o'; 
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
-  // --- Load voices on mount ---
-  useEffect(() => {
-    const loadVoices = () => {
-      setVoices(synthesis.getVoices());
-    };
-    // Voices load asynchronously
-    synthesis.onvoiceschanged = loadVoices;
-    loadVoices(); // Initial load
-  }, []);
+  // --- Load voices on mount ---
+  useEffect(() => {
+    const loadVoices = () => {
+      setVoices(synthesis.getVoices());
+    };
+    synthesis.onvoiceschanged = loadVoices;
+    loadVoices(); 
+  }, []);
 
-  // --- Text-to-Speech (TTS) Function ---
-  const speakText = (text) => {
-    if (!synthesis || !isSpeakingEnabled) return;
-    synthesis.cancel(); // Stop any previous speech
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Attempt to find a Hindi voice if needed
-    if (text.match(/[\u0900-\u097F]/)) { // Check for Hindi characters
-      const hindiVoice = voices.find(v => v.lang === 'hi-IN');
-      if (hindiVoice) {
-        utterance.voice = hindiVoice;
-        utterance.lang = 'hi-IN';
-      }
-    } else {
-      utterance.lang = 'en-US';
-    }
-    synthesis.speak(utterance);
-  };
+  // --- Text-to-Speech (TTS) Function ---
+  const speakText = (text) => {
+    if (!synthesis || !isSpeakingEnabled) return;
+    synthesis.cancel(); 
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Attempt to find a Hindi voice if needed
+    if (text.match(/[\u0900-\u097F]/)) { 
+      const hindiVoice = voices.find(v => v.lang === 'hi-IN');
+      if (hindiVoice) {
+        utterance.voice = hindiVoice;
+        utterance.lang = 'hi-IN';
+      }
+    } else {
+      utterance.lang = 'en-US';
+    }
+    synthesis.speak(utterance);
+  };
 
-  const callGeminiAPI = async (chatHistory) => {
-    setIsLoading(true);
-    try {
-      const payload = { contents: chatHistory, systemInstruction };
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+  const callGeminiAPI = async (chatHistory) => {
+    setIsLoading(true);
+    try {
+        // --- FIX IMPLEMENTATION START: Merge systemInstruction into contents ---
+        
+        // 1. Define the System Instruction part as the first message
+        const instructionMessage = {
+            role: 'user', 
+            parts: systemInstruction.parts 
+        };
 
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error?.message || "An error occurred with the API.");
-      }
-      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) {
-        throw new Error("Received an empty response from the agent.");
-      }
+        // 2. Combine the instruction with the current chat history
+        // The instruction must be at the very beginning of the contents array.
+        // We filter out any previous instruction if it was sent before.
+        const contents = [
+            instructionMessage, 
+            ...chatHistory.filter(msg => msg.parts !== instructionMessage.parts)
+        ];
+        
+        // 3. Define the Payload (systemInstruction field is removed)
+        const payload = { contents }; 
+        // --- FIX IMPLEMENTATION END ---
 
-      const jsonMatch = text?.match(/{[\s\S]*}/);
-      if (jsonMatch && jsonMatch[0]) {
-        const parsedAssessment = JSON.parse(jsonMatch[0]);
-        setAssessment(parsedAssessment);
-        const introText = text.substring(0, jsonMatch.index).trim();
-        const assessmentMessage = introText || 'Thank you for completing the survey!';
-        setMessages((prev) => [
-          ...prev,
-          { role: 'model', parts: [{ text: assessmentMessage }] },
-        ]);
-        speakText(assessmentMessage); // Speak the final message
-      } else {
-        setMessages((prev) => [...prev, { role: 'model', parts: [{ text }] }]);
-        speakText(text); // Speak the bot's question
-      }
-    } catch (err) {
-      console.error("Gemini API Error:", err);
-      toast.error(`Error: ${err.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
 
-  // --- Speech-to-Text (STT) Setup ---
-  useEffect(() => {
-    if (!SpeechRecognition) {
-      if (messages.length === 0) { // Only toast once on mount
-        toast.error("Sorry, your browser doesn't support speech recognition.");
-      }
-      return;
-    }
-    
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US'; // Will be updated by AI's language detection
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error?.message || "An error occurred with the API.");
+      }
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        throw new Error("Received an empty response from the agent.");
+      }
 
-    recognition.onstart = () => {
-      setIsListening(true);
-      toast.success("Listening...");
-    };
-    
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-    
-    recognition.onerror = (event) => {
-      toast.error(`Speech error: ${event.error}`);
-      setIsListening(false);
-    };
-    
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setInput(transcript); // Put speech in text box
-      // Automatically send the message
-      const userMessage = { role: 'user', parts: [{ text: transcript }] };
-      const newChatHistory = [...messages, userMessage];
-      setMessages(newChatHistory);
-      setInput(''); // Clear input after sending
-      callGeminiAPI(newChatHistory);
-    };
-    
-    recognitionRef.current = recognition;
-  }, [messages, voices]); // Re-create if messages or voices change
+      const jsonMatch = text?.match(/{[\s\S]*}/);
+      if (jsonMatch && jsonMatch[0]) {
+        const parsedAssessment = JSON.parse(jsonMatch[0]);
+        setAssessment(parsedAssessment);
+        const introText = text.substring(0, jsonMatch.index).trim();
+        const assessmentMessage = introText || 'Thank you for completing the survey!';
+        setMessages((prev) => [
+          ...prev,
+          { role: 'model', parts: [{ text: assessmentMessage }] },
+        ]);
+        speakText(assessmentMessage); 
+      } else {
+        setMessages((prev) => [...prev, { role: 'model', parts: [{ text }] }]);
+        speakText(text); 
+      }
+    } catch (err) {
+      console.error("Gemini API Error:", err);
+      toast.error(`Error: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // --- NEW: Function to start the chat ---
-  const startChat = (language) => {
-    let firstMessage;
-    if (language === 'hi') {
-      firstMessage = "नमस्ते, मैं सर्वेक्षण शुरू करने के लिए तैयार हूँ।";
-    } else {
-      firstMessage = "Hello, I'm ready to start the survey.";
-    }
-    
-    // Set the first "user" message (which is hidden) and call the API
-    const startMessage = { role: 'user', parts: [{ text: firstMessage }] };
-    setMessages([startMessage]); // Start the chat history
-    callGeminiAPI([startMessage]);
-    setConversationStarted(true);
-  };
+  // --- Speech-to-Text (STT) Setup ---
+  useEffect(() => {
+    if (!SpeechRecognition) {
+      if (messages.length === 0) { 
+        toast.error("Sorry, your browser doesn't support speech recognition.");
+      }
+      return;
+    }
+    
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US'; 
 
-  // Scroll to bottom
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, assessment]);
+    recognition.onstart = () => {
+      setIsListening(true);
+      toast.success("Listening...");
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+    
+    recognition.onerror = (event) => {
+      toast.error(`Speech error: ${event.error}`);
+      setIsListening(false);
+    };
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript); 
+      const userMessage = { role: 'user', parts: [{ text: transcript }] };
+      const newChatHistory = [...messages, userMessage];
+      setMessages(newChatHistory);
+      setInput(''); 
+      callGeminiAPI(newChatHistory);
+    };
+    
+    recognitionRef.current = recognition;
+  }, [messages, voices]); // Note: Running on [messages] can cause issues in complex flows.
 
-  // Handle TEXT send
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading || assessment) return;
-    const userMessage = { role: 'user', parts: [{ text: input }] };
-    const newChatHistory = [...messages, userMessage];
-    setMessages(newChatHistory);
-    setInput('');
-    await callGeminiAPI(newChatHistory);
-  };
-  
-  // Handle MIC button click
-  const toggleListening = () => {
-    if (!recognitionRef.current) return;
-    
-    if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-      // Check the last bot message to guess the language
-      const lastBotMessage = messages.slice().reverse().find(m => m.role === 'model');
-      if (lastBotMessage && lastBotMessage.parts[0].text.match(/[\u0900-\u097F]/)) {
-        recognitionRef.current.lang = 'hi-IN';
-      } else {
-        recognitionRef.current.lang = 'en-US';
-      }
-      recognitionRef.current.start();
-    }
-  };
+  // --- NEW: Function to start the chat ---
+  const startChat = (language) => {
+    let firstMessage;
+    if (language === 'hi') {
+      firstMessage = "नमस्ते, मैं सर्वेक्षण शुरू करने के लिए तैयार हूँ।";
+    } else {
+      firstMessage = "Hello, I'm ready to start the survey.";
+    }
+    
+    const startMessage = { role: 'user', parts: [{ text: firstMessage }] };
+    setMessages([startMessage]); 
+    callGeminiAPI([startMessage]);
+    setConversationStarted(true);
+  };
 
-  // Handle SPEAKER button click
-  const toggleSpeaking = () => {
-    if (isSpeakingEnabled) {
-      synthesis.cancel(); // Stop speaking immediately
-      setIsSpeakingEnabled(false);
-    } else {
-      setIsSpeakingEnabled(true);
-      // Speak the last message if it was a bot and we are TURNING ON speech
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage && lastMessage.role === 'model') {
-        speakText(lastMessage.parts[0].text);
-      }
-    }
-  };
+  // Scroll to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, assessment]);
 
-  return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex flex-col items-center justify-center p-6'>
-      <Toaster position='top-right' />
+  // Handle TEXT send
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading || assessment) return;
+    const userMessage = { role: 'user', parts: [{ text: input }] };
+    const newChatHistory = [...messages, userMessage];
+    setMessages(newChatHistory);
+    setInput('');
+    await callGeminiAPI(newChatHistory);
+  };
+  
+  // Handle MIC button click
+  const toggleListening = () => {
+    if (!recognitionRef.current) return;
+    
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      // Check the last bot message to guess the language
+      const lastBotMessage = messages.slice().reverse().find(m => m.role === 'model');
+      if (lastBotMessage && lastBotMessage.parts[0].text.match(/[\u0900-\u097F]/)) {
+        recognitionRef.current.lang = 'hi-IN';
+      } else {
+        recognitionRef.current.lang = 'en-US';
+      }
+      recognitionRef.current.start();
+    }
+  };
 
-      <div className='w-full max-w-3xl bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl'>
-        {/* Header */}
-        <div className='px-6 pt-6 pb-3 border-b border-gray-100 flex justify-between items-center'>
-          <div className='text-center flex-1'>
-            <h1 className='text-2xl font-bold text-blue-700'>
-              AI Survey Assistant 🤖
-            </h1>
-            <p className='text-gray-500 text-sm mt-1'>
-              Chat with the AI and receive your personalized assessment.
-            </p>
-          </div>
-          {/* Speaker Toggle Button */}
-          <button 
-            onClick={toggleSpeaking} 
-            className={`btn btn-ghost btn-circle ${isSpeakingEnabled ? 'text-blue-600' : 'text-gray-400'}`}
-            title={isSpeakingEnabled ? "Disable Speech" : "Enable Speech"}
-          >
-            {isSpeakingEnabled ? '🔈' : '🔇'}
-          </button>
-        </div>
+  // Handle SPEAKER button click
+  const toggleSpeaking = () => {
+    if (isSpeakingEnabled) {
+      synthesis.cancel(); 
+      setIsSpeakingEnabled(false);
+    } else {
+      setIsSpeakingEnabled(true);
+      // Speak the last message if it was a bot and we are TURNING ON speech
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage && lastMessage.role === 'model') {
+        speakText(lastMessage.parts[0].text);
+      }
+    }
+  };
 
-        {/* --- NEW: Language Start Screen --- */}
-        {!conversationStarted ? (
-          <div className="flex flex-col items-center justify-center p-10" style={{ minHeight: '400px' }}>
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Welcome!</h2>
-            <p className="text-gray-600 mb-6 text-center">Please select your preferred language to begin the survey.</p>
-            <div className="flex gap-4">
-              <button 
-                onClick={() => startChat('en')}
-                className="btn btn-primary"
-              >
-                Start in English
-              </button>
-              <button 
-                onClick={() => startChat('hi')}
-                className="btn btn-accent"
-              >
-                सर्वेक्षण हिंदी में शुरू करें
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Chat Window */}
-            <div className='flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gradient-to-br from-white to-blue-50' style={{ minHeight: '400px', maxHeight: '60vh' }}>
-              {/* We slice(1) to hide the first "Hello, I'm ready" message */}
-              {messages.slice(1).map((msg, index) => (
-                <div
-                  key={index}
-                  className={`flex items-start gap-3 ${
-                    msg.role === 'user' ? 'justify-end' : 'justify-start'
-                  }`}
-                >
-                  {msg.role !== 'user' && (
-                    <div className='flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-xl'>
-                      🤖
-                    </div>
-                  )}
-                  <div
-                    className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm text-sm ${
-                      msg.role === 'user'
-                        ? 'bg-blue-600 text-white rounded-br-none'
-                        : 'bg-gray-100 text-gray-800 rounded-bl-none'
-                    }`}
-                  >
-                    {msg.parts[0].text}
-                  </div>
-                  {msg.role === 'user' && (
-                    <div className='flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-xl'>
-                      👤
-                    </div>
-                  )}
-                </div>
-              ))}
+  return (
+    <div className='min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex flex-col items-center justify-center p-6'>
+      <Toaster position='top-right' />
 
-              {isLoading && !assessment && (
-                <div className='flex items-start gap-3'>
-                  <div className='flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-xl'>
-                    🤖
-                  </div>
-                  <div className='bg-gray-100 text-gray-700 px-4 py-2 rounded-2xl shadow-sm animate-pulse'>
-                    Typing...
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
+      <div className='w-full max-w-3xl bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl'>
+        {/* Header */}
+        <div className='px-6 pt-6 pb-3 border-b border-gray-100 flex justify-between items-center'>
+          <div className='text-center flex-1'>
+            <h1 className='text-2xl font-bold text-blue-700'>
+              AI Survey Assistant 🤖
+            </h1>
+            <p className='text-gray-500 text-sm mt-1'>
+              Chat with the AI and receive your personalized assessment.
+            </p>
+          </div>
+          {/* Speaker Toggle Button */}
+          <button 
+            onClick={toggleSpeaking} 
+            className={`btn btn-ghost btn-circle ${isSpeakingEnabled ? 'text-blue-600' : 'text-gray-400'}`}
+            title={isSpeakingEnabled ? "Disable Speech" : "Enable Speech"}
+          >
+            {isSpeakingEnabled ? '🔈' : '🔇'}
+          </button>
+        </div>
 
-            {/* Assessment Section */}
-            {assessment ? (
-              <div className='p-6 border-t border-gray-200 bg-gradient-to-br from-white to-blue-50'>
-                <h2 className='text-xl font-semibold text-blue-700 mb-3'>
-                  📋 Your Assessment
-                </h2>
+        {/* --- NEW: Language Start Screen --- */}
+        {!conversationStarted ? (
+          <div className="flex flex-col items-center justify-center p-10" style={{ minHeight: '400px' }}>
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">Welcome!</h2>
+            <p className="text-gray-600 mb-6 text-center">Please select your preferred language to begin the survey.</p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => startChat('en')}
+                className="btn btn-primary"
+              >
+                Start in English
+              </button>
+              <button 
+                onClick={() => startChat('hi')}
+                className="btn btn-accent"
+              >
+                सर्वेक्षण हिंदी में शुरू करें
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Chat Window */}
+            <div className='flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gradient-to-br from-white to-blue-50' style={{ minHeight: '400px', maxHeight: '60vh' }}>
+              {/* We slice(1) to hide the first "Hello, I'm ready" message */}
+              {messages.slice(1).map((msg, index) => (
+                <div
+                  key={index}
+                  className={`flex items-start gap-3 ${
+                    msg.role === 'user' ? 'justify-end' : 'justify-start'
+                  }`}
+                >
+                  {msg.role !== 'user' && (
+                    <div className='flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-xl'>
+                      🤖
+                    </div>
+                  )}
+                  <div
+                    className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm text-sm ${
+                      msg.role === 'user'
+                        ? 'bg-blue-600 text-white rounded-br-none'
+                        : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                    }`}
+                  >
+                    {msg.parts[0].text}
+                  </div>
+                  {msg.role === 'user' && (
+                    <div className='flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-xl'>
+                      👤
+                    </div>
+                  )}
+                </div>
+              ))}
 
-                {/* Severity circle */}
-                <div className='flex flex-col items-center mb-4'>
-                  <div
-                    className={`relative w-24 h-24 rounded-full flex items-center justify-center font-bold text-2xl ${
-                      assessment.severityScore > 7
-                        ? 'bg-red-100 text-red-600'
-                        : assessment.severityScore > 4
-                        ? 'bg-yellow-100 text-yellow-600'
-                        : 'bg-green-100 text-green-600'
-                    } shadow-md`}
-                  >
-                    {assessment.severityScore}/10
-                  </div>
-                  <p className='mt-2 text-gray-700 font-medium'>Severity Score</p>
-                </div>
+              {isLoading && !assessment && (
+                <div className='flex items-start gap-3'>
+                  <div className='flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-xl'>
+                    🤖
+                  </div>
+                  <div className='bg-gray-100 text-gray-700 px-4 py-2 rounded-2xl shadow-sm animate-pulse'>
+                    Typing...
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
 
-                {/* Assessment text */}
-                <p className='text-gray-700 leading-relaxed mb-3'>
-                  {assessment.assessment}
-                </p>
+            {/* Assessment Section */}
+            {assessment ? (
+              <div className='p-6 border-t border-gray-200 bg-gradient-to-br from-white to-blue-50'>
+                <h2 className='text-xl font-semibold text-blue-700 mb-3'>
+                  📋 Your Assessment
+                </h2>
 
-                {/* Key Areas */}
-                {assessment.keyAreas && assessment.keyAreas.length > 0 && (
-                  <div>
-                    <h3 className='font-semibold text-gray-800 mb-2'>
-                      Key Areas of Concern:
-                    </h3>
-                    <div className='flex flex-wrap gap-2'>
-                      {assessment.keyAreas.map((area, i) => (
-                        <span
-                          key={i}
-                          className='px-3 py-1 rounded-full bg-red-100 text-red-600 text-sm font-medium'
-                        >
-                          {area}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              // Input Field
-              <form
-                onSubmit={handleSend}
-                className='flex items-center gap-3 border-t border-gray-100 p-4 bg-white'
-              >
-                <input
-                  type='text'
-                  className='flex-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-gray-50 text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all'
-                  placeholder={isListening ? "Listening..." : "Type your answer..."}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  disabled={isLoading}
-                />
-                {/* Microphone Button */}
-                {SpeechRecognition && (
-                  <button
-                    type="button"
-                    onClick={toggleListening}
-                    disabled={isLoading}
-                    className={`px-4 py-2.5 rounded-lg shadow-sm transition-all ${
-                      isListening 
-                        ? 'bg-red-500 text-white' 
-                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                    }`}
-                  >
-                    {isListening ? '...' : '🎤'}
-                  </button>
-                )}
-                <button
-                  type='submit'
-                  disabled={isLoading || !input.trim()}
-                  className='px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all disabled:opacity-50'
-                >
-                  {isLoading ? '...' : 'Send ➤'}
-                </button>
-              </form>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
+                {/* Severity circle */}
+                <div className='flex flex-col items-center mb-4'>
+                  <div
+                    className={`relative w-24 h-24 rounded-full flex items-center justify-center font-bold text-2xl ${
+                      assessment.severityScore > 7
+                        ? 'bg-red-100 text-red-600'
+                        : assessment.severityScore > 4
+                        ? 'bg-yellow-100 text-yellow-600'
+                        : 'bg-green-100 text-green-600'
+                    } shadow-md`}
+                  >
+                    {assessment.severityScore}/10
+                  </div>
+                  <p className='mt-2 text-gray-700 font-medium'>Severity Score</p>
+                </div>
+
+                {/* Assessment text */}
+                <p className='text-gray-700 leading-relaxed mb-3'>
+                  {assessment.assessment}
+                </p>
+
+                {/* Key Areas */}
+                {assessment.keyAreas && assessment.keyAreas.length > 0 && (
+                  <div>
+                    <h3 className='font-semibold text-gray-800 mb-2'>
+                      Key Areas of Concern:
+                    </h3>
+                    <div className='flex flex-wrap gap-2'>
+                      {assessment.keyAreas.map((area, i) => (
+                        <span
+                          key={i}
+                          className='px-3 py-1 rounded-full bg-red-100 text-red-600 text-sm font-medium'
+                        >
+                          {area}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Input Field
+              <form
+                onSubmit={handleSend}
+                className='flex items-center gap-3 border-t border-gray-100 p-4 bg-white'
+              >
+                <input
+                  type='text'
+                  className='flex-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-gray-50 text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-200 transition-all'
+                  placeholder={isListening ? "Listening..." : "Type your answer..."}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  disabled={isLoading}
+                />
+                {/* Microphone Button */}
+                {SpeechRecognition && (
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    disabled={isLoading}
+                    className={`px-4 py-2.5 rounded-lg shadow-sm transition-all ${
+                      isListening 
+                        ? 'bg-red-500 text-white' 
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                    }`}
+                  >
+                    {isListening ? '...' : '🎤'}
+                  </button>
+                )}
+                <button
+                  type='submit'
+                  disabled={isLoading || !input.trim()}
+                  className='px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all disabled:opacity-50'
+                >
+                  {isLoading ? '...' : 'Send ➤'}
+                </button>
+              </form>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default AgentSurvey;

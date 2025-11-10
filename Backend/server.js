@@ -1,12 +1,13 @@
+import dotenv from 'dotenv';
+import 'dotenv/config'; // Loads the .env file
 import express from 'express';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import surveyRoutes from './routes/surveyRoutes.js';
 import activityRoutes from "./routes/activityRoutes.js";
 import cors from 'cors';
 import screenTimeRoutes from "./routes/screenTimeRoutes.js";
-dotenv.config();
+import plannerRoutes from "./routes/plannerRoutes.js"; //dotenv.config();
 
 const app = express();
 
@@ -26,9 +27,12 @@ app.use(express.json());
 // Routes
 app.use('/auth', authRoutes);
 app.use('/api/survey', surveyRoutes);
+app.use('/api/planner', plannerRoutes);
 app.use("/api/activities", activityRoutes);
+// app.use("/api/planner", plannerRoutes);
 app.get('/', (req, res) => res.json('hello world'));
 app.use("/api/screentime", screenTimeRoutes);
+// app.use("/api/planner", plannerRoutes);
 // DB connection
 mongoose
   .connect(process.env.MONGO_URI)
