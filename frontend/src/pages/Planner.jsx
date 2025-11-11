@@ -132,7 +132,7 @@ export default function Planner() {
             className="input input-bordered w-full"
           />
           <button
-            className="btn bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition btn bg-blue-600 hover:bg-blue-700 text-white"
             onClick={handleAddCustomPreference}
           >
             Add
@@ -161,7 +161,7 @@ export default function Planner() {
         <button
           onClick={handleGeneratePlan}
           disabled={isLoading || preferences.length === 0}
-          className="btn btn-primary w-full bg-blue-600 hover:bg-blue-700 border-none text-white text-lg disabled:bg-gray-400"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition btn-primary w-full bg-blue-600 hover:bg-blue-700 border-none text-white text-lg disabled:bg-gray-400"
         >
           {isLoading ? (
             <span className="loading loading-spinner loading-sm"></span>

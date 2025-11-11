@@ -329,10 +329,10 @@ export default function Survey() {
             />
             {currentSet === 1 && (
               <div className="flex flex-col sm:flex-row gap-4">
-                <button onClick={handleSubmit} className="btn btn-success text-black flex-1" disabled={isSubmitting}>
+                <button onClick={handleSubmit} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition btn btn-success flex-1" disabled={isSubmitting}>
                   {isSubmitting ? <span className="loading loading-spinner loading-sm"></span> : (language === 'en' ? 'Submit Set 1 & Get Assessment' : 'सेट 1 सबमिट करें')}
                 </button>
-                <button onClick={() => setCurrentSet(2)} className="btn btn-primary btn-outline flex-1">
+                <button onClick={() => setCurrentSet(2)} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition btn btn-primary btn-outline flex-1">
                   {language === 'en' ? 'Continue to Set 2' : 'सेट 2 पर जाएँ'}
                 </button>
             </div>
@@ -350,10 +350,10 @@ export default function Survey() {
                 />
                 {currentSet === 2 && (
                <div className="flex flex-col sm:flex-row gap-4">
-                    <button onClick={handleSubmit} className="btn btn-success text-white flex-1" disabled={isSubmitting}>
+                    <button onClick={handleSubmit} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition btn btn-success flex-1" disabled={isSubmitting}>
                       {isSubmitting ? <span className="loading loading-spinner loading-sm"></span> : (language === 'en' ? 'Submit Set 1 & 2' : 'सेट 1 और 2 सबमिट करें')}
                     </button>
-                    <button onClick={() => setCurrentSet(3)} className="btn btn-primary btn-outline flex-1">
+                    <button onClick={() => setCurrentSet(3)} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition btn btn-primary btn-outline flex-1">
                       {language === 'en' ? 'Continue to Set 3' : 'सेट 3 पर जाएँ'}
                      </button>
                   </div>
@@ -371,7 +371,7 @@ export default function Survey() {
                   scoreKey="set3"
                   setValue={setValue}
                 />
-                <button onClick={handleSubmit} className="btn btn-success text-black w-full" disabled={isSubmitting}>
+                <button onClick={handleSubmit} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition btn btn-success w-full" disabled={isSubmitting}>
                  {isSubmitting ? <span className="loading loading-spinner loading-sm"></span> : (language === 'en' ? 'Submit Final Assessment' : 'अंतिम मूल्यांकन सबमिट करें')}
                 </button>
               </>
@@ -436,7 +436,7 @@ s                 >
                 
                 {/* --- 1. Original Button (Unchanged) --- */}
                 <button 
-                  className="btn btn-primary w-full bg-blue-600 hover:bg-blue-700 border-none"
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition btn btn-primary w-full text-white bg-blue-600 hover:bg-blue-700 border-none"
                   onClick={() => {
                     document.getElementById('assessment_modal').close();
                     navigate('/tasks');
@@ -459,9 +459,9 @@ s                 >
           )}
         </div>
         {/* Click outside to close */}
-        <form method="dialog" className="modal-backdrop">
+{/*         <form method="dialog" className="modal-backdrop">
           <button>close</button>
-        </form>
+        </form> */}
       </dialog>
     </>
   );
