@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
-
+import MetricsLog from '../models/metricsLogModel.js';
 /**
  * @desc    Strict middleware to protect routes.
  * Blocks any request without a valid token.
@@ -24,16 +24,18 @@ export const protect = async (req, res, next) => {
         // This handles a case where a user was deleted but their token is still valid
         return res.status(401).json({ message: 'User not found.' });
       }
-
+      await MetricsLog.create({ event: 'TOKEN_SUCCESS' });
       next();
     } catch (error) {
       console.error(error);
       // This will catch expired tokens or invalid tokens
+      await MetricsLog.create({ event: 'TOKEN_FAIL' });
       return res.status(401).json({ message: 'Not authorized, token failed.' });
     }
   }
 
   if (!token) {
+     await MetricsLog.create({ event: 'TOKEN_FAIL' });
     return res.status(401).json({ message: 'Not authorized, no token.' });
   }
 };
