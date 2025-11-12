@@ -361,7 +361,7 @@ const AgentSurvey = () => {
               </button>
               <button 
                 onClick={() => startChat('hi')}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition gti btn btn-accent"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition btn btn-accent"
               >
                 सर्वेक्षण हिंदी में शुरू करें
               </button>
