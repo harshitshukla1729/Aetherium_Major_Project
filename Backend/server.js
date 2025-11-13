@@ -17,10 +17,11 @@ const app = express();
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
 }));
+app.options('*', cors());
 
 app.options(/.*/, cors());
-
 
 
 app.use(express.json());
