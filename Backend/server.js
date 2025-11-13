@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import 'dotenv/config'; // Loads the .env file
+import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import authRoutes from './routes/authRoutes.js';
@@ -7,37 +7,33 @@ import surveyRoutes from './routes/surveyRoutes.js';
 import activityRoutes from "./routes/activityRoutes.js";
 import cors from 'cors';
 import screenTimeRoutes from "./routes/screenTimeRoutes.js";
-import plannerRoutes from "./routes/plannerRoutes.js"; //dotenv.config();
+import plannerRoutes from "./routes/plannerRoutes.js";
 import metricsRoutes from './routes/metricsRoutes.js'; 
-import agentRoutes from './routes/agentRoutes.js'
+import agentRoutes from './routes/agentRoutes.js';
+
 const app = express();
 
-// app.use(cors()); // allows any origin
-
+// FIXED CORS — SAFE FOR EXPRESS v5
 app.use(cors({
   origin: '*',
-  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET','POST','PATCH','PUT','DELETE','OPTIONS'],
   credentials: true,
 }));
-app.options('*', cors());
-
-app.options(/.*/, cors());
-
 
 app.use(express.json());
 
-// Routes
+// ROUTES
 app.use('/auth', authRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/survey', surveyRoutes);
 app.use('/api/planner', plannerRoutes);
 app.use("/api/activities", activityRoutes);
-app.use('/api/agent',agentRoutes)
-// app.use("/api/planner", plannerRoutes);
-app.get('/', (req, res) => res.json('hello world'));
+app.use("/api/agent", agentRoutes);
 app.use("/api/screentime", screenTimeRoutes);
-// app.use("/api/planner", plannerRoutes);
-// DB connection
+
+app.get('/', (req, res) => res.json('hello world'));
+
+// DB connection + START SERVER
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
