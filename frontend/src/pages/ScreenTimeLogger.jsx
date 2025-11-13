@@ -47,7 +47,7 @@ const ScreenTimeLogger = () => {
     }
 
     try {
-      const res = await axios.get(`${import.meta.env.VITE_FRONTEND_URL}/api/screentime`, authHeaders);
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/screentime`, authHeaders);
       setLogs(Array.isArray(res.data.data) ? res.data.data : []);
     } catch (err) {
       console.error('Error fetching screen time logs:', err);
