@@ -80,7 +80,7 @@ const ScreenTimeLogger = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post(`${import.meta.env.VITE_FRONTEND_URL}/api/screentime`, formData, authHeaders);
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/screentime`, formData, authHeaders);
       if (res.data?.data) {
         toast.success('Screen time logged!');
         setLogs((prev) => [res.data.data, ...prev]);
