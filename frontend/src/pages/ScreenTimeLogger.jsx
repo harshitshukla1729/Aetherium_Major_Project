@@ -47,7 +47,7 @@ const ScreenTimeLogger = () => {
     }
 
     try {
-      const res = await axios.get('http://localhost:3000/api/screentime', authHeaders);
+      const res = await axios.get(`${import.meta.env.VITE_FRONTEND_URL}/api/screentime`, authHeaders);
       setLogs(Array.isArray(res.data.data) ? res.data.data : []);
     } catch (err) {
       console.error('Error fetching screen time logs:', err);
@@ -80,7 +80,7 @@ const ScreenTimeLogger = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post('http://localhost:3000/api/screentime', formData, authHeaders);
+      const res = await axios.post(`${import.meta.env.VITE_FRONTEND_URL}/api/screentime`, formData, authHeaders);
       if (res.data?.data) {
         toast.success('Screen time logged!');
         setLogs((prev) => [res.data.data, ...prev]);

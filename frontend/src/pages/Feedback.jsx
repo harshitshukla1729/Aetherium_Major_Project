@@ -42,7 +42,7 @@ const FeedbackPage = () => {
 
     try {
       const response = await axios.get(
-        'http://localhost:3000/api/activities/feedback',
+        `${import.meta.env.VITE_FRONTEND_URL}/api/activities/feedback`,
         authHeaders
       );
       if (response.data && response.data.data) {

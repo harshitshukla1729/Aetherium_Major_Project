@@ -42,7 +42,7 @@ export default function ActivityTracker() {
   const [durationToAdd, setDurationToAdd] = useState('');
   const [isModalLoading, setIsModalLoading] = useState(false);
 
-  const API = 'http://localhost:3000/api/activities';
+  const API = `${import.meta.env.VITE_BACKEND_URL}/api/activities`;
 
   const fetchData = useCallback(async () => {
     if (!user) return;
