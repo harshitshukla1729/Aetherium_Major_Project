@@ -25,14 +25,14 @@ export default function Navbar({ user, onLogout }) {
         <Link to='/agent-survey' className='hover:underline'>
           SurveyBOT
         </Link>
+        <Link to='/planner' className='hover:underline'>
+          Planner
+        </Link>
         <Link to='/activities' className='hover:underline'>
           Tracker
         </Link>
         <Link to='/screen-time' className='hover:underline'>
           Screen-time
-        </Link>
-        <Link to='/planner' className='hover:underline'>
-          Planner
         </Link>
         <Link to='/feedback' className='hover:underline'>
           Feedback

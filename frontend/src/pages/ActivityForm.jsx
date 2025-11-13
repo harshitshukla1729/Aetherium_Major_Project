@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from '../api/axios'; // your configured Axios instance
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
-
+import axios from "axios";
 const token = localStorage.getItem("token");
 if (token) {
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -59,8 +59,8 @@ const ActivityForm = () => {
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/activities",
+      const response = await api.post(
+        '/api/activities',
         activityData
       );
 

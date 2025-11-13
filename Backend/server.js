@@ -9,6 +9,7 @@ import cors from 'cors';
 import screenTimeRoutes from "./routes/screenTimeRoutes.js";
 import plannerRoutes from "./routes/plannerRoutes.js"; //dotenv.config();
 import metricsRoutes from './routes/metricsRoutes.js'; 
+import agentRoutes from './routes/agentRoutes.js'
 const app = express();
 
 // app.use(cors()); // allows any origin
@@ -30,6 +31,7 @@ app.use('/api/metrics', metricsRoutes);
 app.use('/api/survey', surveyRoutes);
 app.use('/api/planner', plannerRoutes);
 app.use("/api/activities", activityRoutes);
+app.use('/api/agent',agentRoutes)
 // app.use("/api/planner", plannerRoutes);
 app.get('/', (req, res) => res.json('hello world'));
 app.use("/api/screentime", screenTimeRoutes);

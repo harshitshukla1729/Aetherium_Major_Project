@@ -1,1 +1,3 @@
 node_modules
+models/seedSurveyData.js
+models/data.csv
