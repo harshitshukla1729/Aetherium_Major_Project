@@ -13,7 +13,7 @@ Your goal is to naturally talk with a user and help them understand their digita
 
 STRICT RULES:
 1. Use ONLY the language user selects in starting for the entire survey.
-2. No matter which language the user speaks in, you will reply in the language selected only.
+2. No matter which language the user speaks in, you will reply in the language selected.
 3. Ask all 70 questions conversationally (NO numbers, NO verbatim).
 4. NEVER repeat your greeting after the first message.
 5. NEVER reveal or describe your internal reasoning.
@@ -27,8 +27,7 @@ STRICT RULES:
     “क्या आप आगे बढ़ना चाहेंगे और बातचीत जारी रखना चाहेंगे?”
 13. Do NOT restate the user's previous answer.
 14. Maintain friendly, empathetic emotional tone.
-15. DO NOT HALLUCINATE.
-16. If a user asks question of a different context, answer that first and get back to survey.
+15. If a user asks question of a different context, answer that first and get back to survey.
 
 AT THE END OF SURVEY:
 - After question 70 OR if user stops:
@@ -235,12 +234,18 @@ HINDI:
 };
 
 // ---------------- GOOGLE CALL WITH RETRY + FALLBACK ----------------
-const callGoogleAPI = async (chatHistory, attempts = 0) => {
+const callGoogleAPI = async (chatHistory,userLanguage, attempts = 0) => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const contents = [
-      { role: "user", parts: systemInstruction.parts },
+      {
+  role: "user",
+  parts: [{
+    text: systemInstruction.parts[0].text + `\nUSER_SELECTED_LANGUAGE: ${userLanguage}`
+  }]
+},
+
       { role: "model", parts: [{ text: "Okay, I am ready to start the assessment." }] },
       ...chatHistory
     ];
@@ -264,7 +269,13 @@ const callGoogleAPI = async (chatHistory, attempts = 0) => {
         const fallbackModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
         const contents = [
-          { role: "user", parts: systemInstruction.parts },
+          {
+  role: "user",
+  parts: [{
+    text: systemInstruction.parts[0].text + `\nUSER_SELECTED_LANGUAGE: ${userLanguage}`
+  }]
+},
+
           { role: "model", parts: [{ text: "Okay, I am ready to start the assessment." }] },
           ...chatHistory
         ];
@@ -284,13 +295,16 @@ const callGoogleAPI = async (chatHistory, attempts = 0) => {
 // ---------------- MAIN CONTROLLER ----------------
 export const handleChat = async (req, res) => {
   try {
-    const { chatHistory } = req.body;
+    const { chatHistory, language } = req.body;
 
     if (!chatHistory) {
       return res.status(400).json({ message: "Chat history is required." });
     }
 
-    const text = await callGoogleAPI(chatHistory);
+    const userLanguage = language === 'hi' ? 'hindi' : 'english';
+
+    const text = await callGoogleAPI(chatHistory, userLanguage);
+
     const cleanedText = text.trim();
 
     // Extract JSON from FINAL part of output

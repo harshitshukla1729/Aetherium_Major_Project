@@ -15,7 +15,7 @@ const AgentSurvey = () => {
   const [isSpeakingEnabled, setIsSpeakingEnabled] = useState(true); 
   const [voices, setVoices] = useState([]); 
   const [conversationStarted, setConversationStarted] = useState(false); 
-  
+  const [selectedLanguage, setSelectedLanguage] = useState(null);
   const chatEndRef = useRef(null);
   const recognitionRef = useRef(null);
 
@@ -51,13 +51,15 @@ const AgentSurvey = () => {
   };
 
   // --- UPDATED: This function now calls YOUR backend ---
-  const callAgentAPI = async (chatHistory) => {
-    setIsLoading(true);
-    try {
-      // We send the chat history to our secure backend endpoint
-      const response = await api.post(secureApiUrl, {
-        chatHistory: chatHistory 
-      });
+ const callAgentAPI = async (chatHistory, lang = selectedLanguage) => {
+  setIsLoading(true);
+  try {
+    const response = await api.post(secureApiUrl, {
+      chatHistory: chatHistory,
+      language: lang
+    });
+
+
 
       // The backend processes, calls Google, saves to DB, and returns the AI's response
       const { text, assessmentData } = response.data;
@@ -134,18 +136,20 @@ const AgentSurvey = () => {
 
   // --- Function to start the chat ---
   const startChat = (language) => {
-    let firstMessage;
-    if (language === 'hi') {
-      firstMessage = "नमस्ते, मैं सर्वेक्षण शुरू करने के लिए तैयार हूँ।";
-    } else {
-      firstMessage = "Hello, I'm ready to start the survey.";
-    }
-    
-    const startMessage = { role: 'user', parts: [{ text: firstMessage }] };
-    setMessages([startMessage]); 
-    callAgentAPI([startMessage]);
-    setConversationStarted(true);
-  };
+  setSelectedLanguage(language);    // store language
+  
+  let firstMessage;
+  if (language === 'hi') {
+    firstMessage = "नमस्ते, मैं सर्वेक्षण शुरू करने के लिए तैयार हूँ।";
+  } else {
+    firstMessage = "Hello, I'm ready to start the survey.";
+  }
+
+  const startMessage = { role: 'user', parts: [{ text: firstMessage }] };
+  setMessages([startMessage]); 
+  callAgentAPI([startMessage], language); // pass language
+  setConversationStarted(true);
+};
 
   // Scroll to bottom
   useEffect(() => {
